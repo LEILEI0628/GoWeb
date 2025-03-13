@@ -6,15 +6,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Start:https://github.com/gin-gonic/gin
+// 字节跳动的hertz（更高性能）
 func main() {
-	// 字节跳动的hertz（更高性能）
-	server := gin.Default()
+
+	server := gin.Default() // 创建Engine
+
+	// GET请求
 	server.GET("/hello", func(c *gin.Context) { // 路由注册
 		// 第二个参数为handlers ...HandlerFunc
 		//type HandlerFunc func(*Context)
 		c.String(http.StatusOK, "hello world")
 	})
 
+	// POST请求
 	server.POST("/post", func(c *gin.Context) {
 		c.String(http.StatusOK, "Hello POST")
 	})
