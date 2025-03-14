@@ -4,11 +4,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var userHandler Handler
+var userHandler *Handler
 
 // Routers User相关的路由
 func Routers(server *gin.Engine) {
-	userHandler = Handler{}
+	userHandler = &Handler{}
 	// 分组路由
 	userGroup := server.Group("/users")
 	signUpRouter(userGroup)
@@ -19,11 +19,11 @@ func Routers(server *gin.Engine) {
 }
 
 func signUpRouter(userGroup *gin.RouterGroup) {
-	userGroup.POST("/signUp", userHandler.SignUp)
+	userGroup.POST("/signup", userHandler.SignUp)
 }
 
 func signInRouter(userGroup *gin.RouterGroup) {
-	userGroup.POST("/signIn", userHandler.SignIn)
+	userGroup.POST("/signin", userHandler.SignIn)
 }
 
 func editRouter(userGroup *gin.RouterGroup) {
