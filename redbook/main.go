@@ -2,11 +2,19 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"golang-web-learn/redbook/internal/middleware"
 	"golang-web-learn/redbook/internal/web"
 )
 
 func main() {
 	server := gin.Default()
+
+	//server.Use(func(c *gin.Context) { // Use作用于全部路由
+	//	fmt.Println("自定义的middleware")
+	//})
+
+	middleware.ResolveCROS(server)
+
 	web.RegisterRouters(server)
 	// 下列代码已被封装
 	// START

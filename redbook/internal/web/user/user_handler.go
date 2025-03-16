@@ -12,7 +12,7 @@ type Handler struct{}
 func (userHandler *Handler) SignUp(context *gin.Context) {
 	// 内部结构体：确保只有本方法能访问
 	type SignUpReq struct {
-		Email           string `json:"email"`
+		Email           string `json:"email"` // `json:"email"`：标签
 		Password        string `json:"password"`
 		ConfirmPassword string `json:"confirmPassword"`
 	}
