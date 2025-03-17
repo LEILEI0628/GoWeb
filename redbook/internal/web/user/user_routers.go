@@ -4,34 +4,40 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var userHandler *UserHandler
-
 // Routers User相关的路由
-func Routers(server *gin.Engine) {
-	userHandler = NewUserHandler()
+type UserRouters struct {
+	userHandler *UserHandler
+	server      *gin.Engine
+}
+
+func NewUserRouters(userHandler *UserHandler, server *gin.Engine) *UserRouters {
+	return &UserRouters{userHandler: userHandler, server: server}
+}
+
+func (userRouters UserRouters) RegisterUserRouters() {
 	// 分组路由
-	userGroup := server.Group("/users")
-	signUpRouter(userGroup)
-	signInRouter(userGroup)
-	profileRouter(userGroup)
-	editRouter(userGroup)
+	userGroup := userRouters.server.Group("/users")
+	userRouters.signUpRouter(userGroup)
+	userRouters.signInRouter(userGroup)
+	userRouters.profileRouter(userGroup)
+	userRouters.editRouter(userGroup)
 
 }
 
-func signUpRouter(userGroup *gin.RouterGroup) {
-	userGroup.POST("/signup", userHandler.SignUp)
+func (userRouters UserRouters) signUpRouter(userGroup *gin.RouterGroup) {
+	userGroup.POST("/signup", userRouters.userHandler.SignUp)
 }
 
-func signInRouter(userGroup *gin.RouterGroup) {
-	userGroup.POST("/signin", userHandler.SignIn)
+func (userRouters UserRouters) signInRouter(userGroup *gin.RouterGroup) {
+	userGroup.POST("/signin", userRouters.userHandler.SignIn)
 }
 
-func editRouter(userGroup *gin.RouterGroup) {
-	userGroup.POST("/edit", userHandler.Edit)
+func (userRouters UserRouters) editRouter(userGroup *gin.RouterGroup) {
+	userGroup.POST("/edit", userRouters.userHandler.Edit)
 
 }
 
-func profileRouter(userGroup *gin.RouterGroup) {
-	userGroup.GET("/profile", userHandler.Profile)
+func (userRouters UserRouters) profileRouter(userGroup *gin.RouterGroup) {
+	userGroup.GET("/profile", userRouters.userHandler.Profile)
 
 }

@@ -1,9 +1,9 @@
 package user
 
 import (
-	"fmt"
 	regexp "github.com/dlclark/regexp2" // 自带的regexp无法处理复杂正则
 	"github.com/gin-gonic/gin"
+	"golang-web-learn/redbook/internal/domain"
 	"golang-web-learn/redbook/internal/service"
 	"net/http"
 )
@@ -15,7 +15,7 @@ type UserHandler struct {
 	userService *service.UserService
 }
 
-func NewUserHandler() *UserHandler {
+func NewUserHandler(userService *service.UserService) *UserHandler { // 使用此方法可以提示忘记传参
 	const ( // 就近原则和最小化作用域原则
 		emailRegexPattern = `^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$` // ``比""简洁（无需转义）
 		//emailRegexPattern = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$"
@@ -27,6 +27,7 @@ func NewUserHandler() *UserHandler {
 	return &UserHandler{
 		emailExp:    emailExp,
 		passwordExp: passwordExp,
+		userService: userService,
 	}
 }
 
@@ -76,8 +77,12 @@ func (userHandler *UserHandler) SignUp(context *gin.Context) {
 		return
 	}
 
-	// TODO ORM操作
-	fmt.Printf("%v\n", req)
+	err = userHandler.userService.SignUp(context.Request.Context(), domain.User{Email: req.Email, Password: req.Password})
+	if err != nil {
+		// TODO 记录日志
+		context.String(http.StatusOK, "系统错误")
+		return
+	}
 	context.String(http.StatusOK, "注册成功！")
 }
 
