@@ -3,6 +3,7 @@ module golang-web-learn
 go 1.24
 
 require (
+	github.com/dlclark/regexp2 v1.11.5
 	github.com/gin-contrib/cors v1.7.3
 	github.com/gin-gonic/gin v1.10.0
 	gorm.io/driver/sqlite v1.5.7
