@@ -52,6 +52,7 @@ func (userDAO *UserDAO) Insert(context context.Context, user User) error {
 
 func (userDAO *UserDAO) FindByEmail(context context.Context, email string) (User, error) {
 	var user User
+	// SELECT * FROM `users` WHERE `email`=?
 	err := userDAO.db.WithContext(context).Where("email=?", email).First(&user).Error
 	//err := userDAO.db.WithContext(context).First(&user, "email=?", email).Error // 等价写法
 	return user, err // 无需判断直接返回（已更改err名称）

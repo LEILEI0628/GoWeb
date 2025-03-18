@@ -18,7 +18,7 @@ type UserHandler struct {
 }
 
 func NewUserHandler(userService *service.UserService) *UserHandler { // 使用此方法可以提示忘记传参
-	const ( // 就近原则和最小化作用域原则
+	const (                                                          // 就近原则和最小化作用域原则
 		emailRegexPattern = `^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$` // ``比""简洁（无需转义）
 		//emailRegexPattern = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$"
 		passwordRegexPattern = `^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&.])[A-Za-z\d@$!%*#?&.]{8,72}$`
@@ -92,6 +92,10 @@ func (userHandler *UserHandler) SignIn(context *gin.Context) {
 	// 创建session
 	session := sessions.Default(context)
 	session.Set("userId", userFind.Id)
+	session.Options(sessions.Options{
+		//Secure: true, // 使用https协议
+		MaxAge: 86400,
+	})
 	err = session.Save()
 	if err != nil {
 		context.String(http.StatusOK, "系统错误")
@@ -100,11 +104,26 @@ func (userHandler *UserHandler) SignIn(context *gin.Context) {
 	context.String(http.StatusOK, "登录成功")
 }
 
+func (userHandler *UserHandler) SignOut(context *gin.Context) {
+	// 注销session（设置过期）
+	session := sessions.Default(context)
+	session.Options(sessions.Options{
+		MaxAge: -1,
+	})
+	err := session.Save()
+	if err != nil {
+		context.String(http.StatusOK, "系统错误")
+		return
+	}
+	context.String(http.StatusOK, "退出成功")
+}
+
 func (userHandler *UserHandler) Edit(context *gin.Context) {
 
 }
 
 func (userHandler *UserHandler) Profile(context *gin.Context) {
+	context.String(http.StatusOK, "个人信息")
 
 }
 

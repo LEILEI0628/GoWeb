@@ -18,12 +18,12 @@ func RegisterRouters(server *gin.Engine, db *gorm.DB) {
 	//})
 
 	globalMiddleware := middleware.NewGlobalMiddlewareBuilder()
-	server.Use(globalMiddleware.ResolveCORS()) // 解决跨域问题
-	server.Use(globalMiddleware.Session())     // 添加session（cookie中）
+	server.Use(globalMiddleware.ResolveCORS())         // 解决跨域问题
+	server.Use(globalMiddleware.Session())             // 添加session（cookie中）
 	server.Use(middleware.NewLoginMiddlewareBuilder(). // 校验session
-		IgnorePaths("/users/login"). // 链式调用，不同的server可定制
-		IgnorePaths("/users/signup").
-		Build())
+								IgnorePaths("/users/login"). // 链式调用，不同的server可定制（扩展性）
+								IgnorePaths("/users/signup").
+								Build())
 
 	initUserRouters(server, db).RegisterUserRouters()
 

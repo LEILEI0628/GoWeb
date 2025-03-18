@@ -19,6 +19,7 @@ func (userRouters UserRouters) RegisterUserRouters() {
 	userGroup := userRouters.server.Group("/users")
 	userRouters.signUpRouter(userGroup)
 	userRouters.signInRouter(userGroup)
+	userRouters.signOutRouter(userGroup)
 	userRouters.profileRouter(userGroup)
 	userRouters.editRouter(userGroup)
 
@@ -30,6 +31,11 @@ func (userRouters UserRouters) signUpRouter(userGroup *gin.RouterGroup) {
 
 func (userRouters UserRouters) signInRouter(userGroup *gin.RouterGroup) {
 	userGroup.POST("/login", userRouters.userHandler.SignIn)
+}
+
+func (userRouters UserRouters) signOutRouter(userGroup *gin.RouterGroup) {
+	userGroup.GET("/logout", userRouters.userHandler.SignOut)
+
 }
 
 func (userRouters UserRouters) editRouter(userGroup *gin.RouterGroup) {
