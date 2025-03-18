@@ -2,8 +2,6 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"golang-web-learn/redbook/internal/middleware"
-	"golang-web-learn/redbook/internal/repository/dao"
 	"golang-web-learn/redbook/internal/web"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -12,23 +10,7 @@ import (
 func main() {
 	server := gin.Default()
 
-	db, err := gorm.Open(mysql.Open("root:20010628@tcp(localhost:13316)/redbook"))
-	if err != nil {
-		// panic相当于整个goroutine结束
-		// panic只会出现在初始化的过程中（一旦初始化出错，就没必要启动了）
-		panic(err)
-	}
-
-	// 建表
-	err = dao.InitUserTable(db)
-	if err != nil {
-		panic(err)
-	}
-	//server.Use(func(c *gin.Context) { // Use作用于全部路由
-	//	fmt.Println("自定义的middleware")
-	//})
-
-	middleware.ResolveCROS(server)
+	db := initDB()
 
 	web.RegisterRouters(server, db)
 	// 下列代码已被封装
@@ -43,4 +25,21 @@ func main() {
 	//server.POST("/users/edit/:id", userHandler.Edit)
 	// END
 	server.Run(":8080")
+}
+
+func initDB() *gorm.DB {
+	db, err := gorm.Open(mysql.Open("root:20010628@tcp(localhost:13316)/redbook"))
+	if err != nil {
+		// panic相当于整个goroutine结束
+		// panic只会出现在初始化的过程中（一旦初始化出错，就没必要启动了）
+		panic(err)
+	}
+
+	// 建表
+	//err := dao.InitUserTable(db)
+	//if err != nil {
+	//	panic(err)
+	//}
+
+	return db
 }

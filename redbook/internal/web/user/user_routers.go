@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Routers User相关的路由
+// UserRouters User相关的路由
 type UserRouters struct {
 	userHandler *UserHandler
 	server      *gin.Engine

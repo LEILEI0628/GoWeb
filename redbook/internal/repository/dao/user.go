@@ -2,8 +2,14 @@ package dao
 
 import (
 	"context"
+	"errors"
+	"github.com/go-sql-driver/mysql"
 	"gorm.io/gorm"
 	"time"
+)
+
+var (
+	ErrUserEmailDuplicated = errors.New("user email duplicated")
 )
 
 type UserDAO struct {
@@ -18,7 +24,18 @@ func (userDAO *UserDAO) Insert(context context.Context, user User) error {
 	now := time.Now().UnixMilli() // 当前时间的毫秒数
 	user.CreateTime = now
 	user.UpdateTime = now
-	return userDAO.db.WithContext(context).Create(&user).Error
+	err := userDAO.db.WithContext(context).Create(&user).Error
+	// 关于邮箱冲突问题：使用先查操作（查询时都返回查询邮箱不存在）会导致后插入的用户操作失败
+	// 尝试锁住（间隙锁）：SELECT * FROM users WHERE email=... FOR UPDATE（存在并发问题）
+	// 冲突发生概率不大时可以不用分布式锁
+	// 以下代码与底层强耦合（更换数据库失效）
+	if mysqlErr, ok := err.(*mysql.MySQLError); ok {
+		const uniqueConflictsErrNo uint16 = 1062
+		if mysqlErr.Number == uniqueConflictsErrNo {
+			return ErrUserEmailDuplicated
+		}
+	}
+	return err
 }
 
 // User dao.User直接对应数据库表

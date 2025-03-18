@@ -10,6 +10,10 @@ import (
 func ResolveCROS(server *gin.Engine) {
 	// 需要解决跨域时可以参考前端的preflight请求
 
+	//server.Use(func(c *gin.Context) { // Use作用于全部路由
+	//	fmt.Println("自定义的middleware")
+	//})
+
 	// GO解决跨域的middleware：https://github.com/gin-contrib/cors
 	// CORS for Prefix http://localhost and Contains staycool.top origins
 	server.Use(cors.New(cors.Config{

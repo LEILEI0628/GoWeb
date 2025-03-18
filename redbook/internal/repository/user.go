@@ -6,6 +6,8 @@ import (
 	"golang-web-learn/redbook/internal/repository/dao"
 )
 
+var ErrUserEmailDuplicated = dao.ErrUserEmailDuplicated
+
 type UserRepository struct {
 	userDAO *dao.UserDAO
 }
