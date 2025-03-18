@@ -29,7 +29,7 @@ func (userRouters UserRouters) signUpRouter(userGroup *gin.RouterGroup) {
 }
 
 func (userRouters UserRouters) signInRouter(userGroup *gin.RouterGroup) {
-	userGroup.POST("/signin", userRouters.userHandler.SignIn)
+	userGroup.POST("/login", userRouters.userHandler.SignIn)
 }
 
 func (userRouters UserRouters) editRouter(userGroup *gin.RouterGroup) {

@@ -10,6 +10,7 @@ import (
 
 var (
 	ErrUserEmailDuplicated = errors.New("user email duplicated")
+	ErrUserNotFound        = gorm.ErrRecordNotFound // 别名，返回的gorm.ErrRecordNotFound err会被改写成ErrUserNotFound
 )
 
 type UserDAO struct {
@@ -18,6 +19,17 @@ type UserDAO struct {
 
 func NewUserDAO(db *gorm.DB) *UserDAO {
 	return &UserDAO{db: db}
+}
+
+// User dao.User直接对应数据库表
+// 其他叫法：entity，model，PO（persistent object）
+type User struct {
+	Id         int64  `gorm:"primaryKey,auto_Increment"` // 自增主键
+	Email      string `gorm:"unique"`
+	Password   string
+	CreateTime int64 // 创建时间：毫秒数
+	UpdateTime int64 // 修改时间：毫秒数
+
 }
 
 func (userDAO *UserDAO) Insert(context context.Context, user User) error {
@@ -38,13 +50,9 @@ func (userDAO *UserDAO) Insert(context context.Context, user User) error {
 	return err
 }
 
-// User dao.User直接对应数据库表
-// 其他叫法：entity，model，PO（persistent object）
-type User struct {
-	Id         int64  `gorm:"primaryKey,auto_Increment"` // 自增主键
-	Email      string `gorm:"unique"`
-	Password   string
-	CreateTime int64 // 创建时间：毫秒数
-	UpdateTime int64 // 修改时间：毫秒数
-
+func (userDAO *UserDAO) FindByEmail(context context.Context, email string) (User, error) {
+	var user User
+	err := userDAO.db.WithContext(context).Where("email=?", email).First(&user).Error
+	//err := userDAO.db.WithContext(context).First(&user, "email=?", email).Error // 等价写法
+	return user, err // 无需判断直接返回（已更改err名称）
 }

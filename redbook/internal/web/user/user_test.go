@@ -16,5 +16,8 @@ func TestEncrypt(t *testing.T) {
 	fmt.Println(string(value))
 	err = bcrypt.CompareHashAndPassword(value, []byte(password))
 	assert.NoError(t, err)
+}
 
+func Checklogin() {
+	
 }

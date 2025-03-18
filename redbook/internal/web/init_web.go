@@ -16,8 +16,17 @@ func RegisterRouters(server *gin.Engine, db *gorm.DB) {
 	//server.Use(func(c *gin.Context) { // Use作用于全部路由
 	//	fmt.Println("自定义的middleware")
 	//})
-	middleware.ResolveCROS(server) // 解决跨域问题
+
+	globalMiddleware := middleware.NewGlobalMiddlewareBuilder()
+	server.Use(globalMiddleware.ResolveCORS()) // 解决跨域问题
+	server.Use(globalMiddleware.Session())     // 添加session（cookie中）
+	server.Use(middleware.NewLoginMiddlewareBuilder(). // 校验session
+		IgnorePaths("/users/login"). // 链式调用，不同的server可定制
+		IgnorePaths("/users/signup").
+		Build())
+
 	initUserRouters(server, db).RegisterUserRouters()
+
 }
 
 func initUserRouters(server *gin.Engine, db *gorm.DB) *user.UserRouters {

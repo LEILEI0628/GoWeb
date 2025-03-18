@@ -7,16 +7,11 @@ import (
 	"time"
 )
 
-func ResolveCROS(server *gin.Engine) {
+func (b GlobalMiddlewareBuilder) ResolveCORS() gin.HandlerFunc {
 	// 需要解决跨域时可以参考前端的preflight请求
-
-	//server.Use(func(c *gin.Context) { // Use作用于全部路由
-	//	fmt.Println("自定义的middleware")
-	//})
-
 	// GO解决跨域的middleware：https://github.com/gin-contrib/cors
 	// CORS for Prefix http://localhost and Contains staycool.top origins
-	server.Use(cors.New(cors.Config{
+	return cors.New(cors.Config{
 		//AllowOrigins: []string{"http://localhost:3000"},
 		// AllowMethods:Default value is simple methods (GET, POST, PUT, PATCH, DELETE, HEAD, and OPTIONS)
 		//AllowMethods: []string{"GET", "POST"}, // 不写就是支持所有
@@ -33,5 +28,6 @@ func ResolveCROS(server *gin.Engine) {
 			return strings.Contains(origin, "staycool.top") // 公司域名
 		},
 		MaxAge: 12 * time.Hour,
-	}))
+	})
+
 }

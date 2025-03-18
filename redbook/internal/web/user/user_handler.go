@@ -3,6 +3,7 @@ package user
 import (
 	"errors"
 	regexp "github.com/dlclark/regexp2" // 自带的regexp无法处理复杂正则
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"golang-web-learn/redbook/internal/domain"
 	"golang-web-learn/redbook/internal/service"
@@ -69,7 +70,34 @@ func (userHandler *UserHandler) SignUp(context *gin.Context) {
 }
 
 func (userHandler *UserHandler) SignIn(context *gin.Context) {
+	type SignInReq struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	var req SignInReq
+	if err := context.Bind(&req); err != nil {
+		return
+	}
+	userFind, err := userHandler.userService.SignIn(context.Request.Context(), domain.User{Email: req.Email, Password: req.Password})
+	if errors.Is(err, service.ErrInvalidEmailOrPassword) {
+		context.String(http.StatusOK, "账号或密码错误") // 不要明确告知账号不对或密码不对
+		return
+	}
 
+	if err != nil {
+		context.String(http.StatusOK, "系统错误")
+		return
+	}
+
+	// 创建session
+	session := sessions.Default(context)
+	session.Set("userId", userFind.Id)
+	err = session.Save()
+	if err != nil {
+		context.String(http.StatusOK, "系统错误")
+		return
+	}
+	context.String(http.StatusOK, "登录成功")
 }
 
 func (userHandler *UserHandler) Edit(context *gin.Context) {

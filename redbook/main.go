@@ -16,8 +16,6 @@ func main() {
 	// 下列代码已被封装
 	// START
 	//userHandler := web.UserHandler{}
-	//server.POST("/users/signIn", userHandler.SignIn)
-	//server.POST("/users/signUp", userHandler.SignUp)
 	//server.GET("/users/profile", userHandler.Profile)
 	//server.POST("/users/edit", userHandler.Edit)
 	// REST风格
