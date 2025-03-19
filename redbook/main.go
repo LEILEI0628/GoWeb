@@ -16,10 +16,12 @@ func main() {
 
 	db := initDB()
 
-	redisCilent := initRedis()
+	redisClient := initRedis()
 
-	// 限流（滑动窗口算法）
-	server.Use(ratelimit.NewBuilder(limiter.NewRedisSlidingWindowLimiter(redisCilent, time.Second, 1000)).Build())
+	// 限流（滑动窗口算法）使用redis统计请求数量
+	server.Use(ratelimit.
+		NewBuilder(limiter.NewRedisSlidingWindowLimiter(redisClient, time.Second, 1000)).
+		Build())
 
 	web.RegisterRouters(server, db)
 	// 下列代码已被封装
