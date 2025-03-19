@@ -1,13 +1,16 @@
-package user
+package web
 
 import (
 	"errors"
+	"fmt"
 	regexp "github.com/dlclark/regexp2" // 自带的regexp无法处理复杂正则
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	jwt "github.com/golang-jwt/jwt/v5"
 	"golang-web-learn/redbook/internal/domain"
 	"golang-web-learn/redbook/internal/service"
 	"net/http"
+	"time"
 )
 
 // Handler User相关的业务处理
@@ -18,7 +21,7 @@ type UserHandler struct {
 }
 
 func NewUserHandler(userService *service.UserService) *UserHandler { // 使用此方法可以提示忘记传参
-	const (                                                          // 就近原则和最小化作用域原则
+	const ( // 就近原则和最小化作用域原则
 		emailRegexPattern = `^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$` // ``比""简洁（无需转义）
 		//emailRegexPattern = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$"
 		passwordRegexPattern = `^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&.])[A-Za-z\d@$!%*#?&.]{8,72}$`
@@ -69,7 +72,45 @@ func (userHandler *UserHandler) SignUp(context *gin.Context) {
 	context.String(http.StatusOK, "注册成功！")
 }
 
-func (userHandler *UserHandler) SignIn(context *gin.Context) {
+func (userHandler *UserHandler) SignInByJWT(context *gin.Context) {
+	type SignInReq struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	var req SignInReq
+	if err := context.Bind(&req); err != nil {
+		return
+	}
+	userFind, err := userHandler.userService.SignIn(context.Request.Context(), domain.User{Email: req.Email, Password: req.Password})
+	if errors.Is(err, service.ErrInvalidEmailOrPassword) {
+		context.String(http.StatusOK, "账号或密码错误") // 不要明确告知账号不对或密码不对
+		return
+	}
+
+	if err != nil {
+		context.String(http.StatusOK, "系统错误")
+		return
+	}
+
+	// 创建JWT token
+	userClaims := UserClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(12 * time.Hour)), // 12小时后过期
+		},
+		UID: userFind.Id,
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, userClaims)
+	tokenStr, err := token.SignedString([]byte("7x9FpL2QaZ8rT4wY6vBcN1mK3jH5gD7s"))
+	if err != nil {
+		context.String(http.StatusInternalServerError, "系统错误")
+		return
+	}
+
+	context.Header("x-jwt-token", tokenStr)
+	context.String(http.StatusOK, "登录成功")
+}
+
+func (userHandler *UserHandler) SignInBySession(context *gin.Context) {
 	type SignInReq struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -94,7 +135,7 @@ func (userHandler *UserHandler) SignIn(context *gin.Context) {
 	session.Set("userId", userFind.Id)
 	session.Options(sessions.Options{
 		//Secure: true, // 使用https协议
-		MaxAge: 86400,
+		MaxAge: 60 * 60 * 60,
 	})
 	err = session.Save()
 	if err != nil {
@@ -122,7 +163,19 @@ func (userHandler *UserHandler) Edit(context *gin.Context) {
 
 }
 
-func (userHandler *UserHandler) Profile(context *gin.Context) {
+func (userHandler *UserHandler) ProfileByJWT(context *gin.Context) {
+	c, _ := context.Get("claims") // 发生error则claims为空，在类型断言时也可判断，故可以忽略此处错误
+	claims, ok := c.(*UserClaims) // 类型断言
+	if !ok {
+		context.String(http.StatusOK, "系统错误")
+		return
+	}
+	UID := claims.UID
+	context.String(http.StatusOK, fmt.Sprintf("UID:%d的个人信息", UID))
+
+}
+
+func (userHandler *UserHandler) ProfileBySession(context *gin.Context) {
 	context.String(http.StatusOK, "个人信息")
 
 }
@@ -161,4 +214,10 @@ func (userHandler *UserHandler) checkMessage(context *gin.Context, email string,
 		return errors.New("密码格式错误")
 	}
 	return nil
+}
+
+type UserClaims struct {
+	jwt.RegisteredClaims // 组合RegisteredClaims可以更简洁的实现Claims接口
+	// 下列是自定义字段
+	UID int64
 }

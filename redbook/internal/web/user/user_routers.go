@@ -1,4 +1,4 @@
-package user
+package web
 
 import (
 	"github.com/gin-gonic/gin"
@@ -30,7 +30,7 @@ func (userRouters UserRouters) signUpRouter(userGroup *gin.RouterGroup) {
 }
 
 func (userRouters UserRouters) signInRouter(userGroup *gin.RouterGroup) {
-	userGroup.POST("/login", userRouters.userHandler.SignIn)
+	userGroup.POST("/login", userRouters.userHandler.SignInByJWT)
 }
 
 func (userRouters UserRouters) signOutRouter(userGroup *gin.RouterGroup) {
@@ -44,6 +44,6 @@ func (userRouters UserRouters) editRouter(userGroup *gin.RouterGroup) {
 }
 
 func (userRouters UserRouters) profileRouter(userGroup *gin.RouterGroup) {
-	userGroup.GET("/profile", userRouters.userHandler.Profile)
+	userGroup.GET("/profile", userRouters.userHandler.ProfileByJWT)
 
 }

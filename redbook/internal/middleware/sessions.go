@@ -14,7 +14,7 @@ func (b GlobalMiddlewareBuilder) Session() gin.HandlerFunc {
 	// 基于redis实现
 	// 第一个参数是最大空闲连接数量，第二个参数是连接方式，第三四个参数是连接信息和密码，第五六个是key
 	store, err := redis.NewStore(16, "tcp", "localhost:6379", "",
-		[]byte("7x9FpL2QaZ8rT4wY6vBcN1mK3jH5gD7s"), []byte("7x9FpL2QaZ8rT4wY6vBcN1mK3jH5gD7s"))
+		[]byte("7x9FpL2QaZ8rT4wY6vBcN1mK3jH5gD7s"), []byte("qW3eRtY8uI0oP9aSsDfGhJkL4zXcV6bN"))
 	if err != nil {
 		panic(err)
 	}
