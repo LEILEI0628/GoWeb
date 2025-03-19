@@ -97,7 +97,8 @@ func (userHandler *UserHandler) SignInByJWT(context *gin.Context) {
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(12 * time.Hour)), // 12小时后过期
 		},
-		UID: userFind.Id,
+		UID:       userFind.Id,
+		UserAgent: context.Request.UserAgent(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, userClaims)
 	tokenStr, err := token.SignedString([]byte("7x9FpL2QaZ8rT4wY6vBcN1mK3jH5gD7s"))
@@ -219,5 +220,6 @@ func (userHandler *UserHandler) checkMessage(context *gin.Context, email string,
 type UserClaims struct {
 	jwt.RegisteredClaims // 组合RegisteredClaims可以更简洁的实现Claims接口
 	// 下列是自定义字段
-	UID int64
+	UID       int64
+	UserAgent string
 }

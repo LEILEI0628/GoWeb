@@ -49,6 +49,13 @@ func (loginJWTBuilder LoginMiddlewareJWTBuilder) Build() gin.HandlerFunc {
 			context.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
+
+		if claims.UserAgent != context.Request.UserAgent() { // 可以只匹配部分内容，减少误操作的可能
+			// 严重的安全问题
+			// TODO 监控
+			context.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
 		// 通过校验
 		// token续约（每10分钟）
 		now := time.Now()
