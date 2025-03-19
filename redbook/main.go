@@ -2,15 +2,24 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"golang-web-learn/redbook/internal/web"
+	"golang-web-learn/redbook/pkg/ginx/middleware/ratelimit"
+	"golang-web-learn/redbook/pkg/limiter"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"time"
 )
 
 func main() {
 	server := gin.Default()
 
 	db := initDB()
+
+	redisCilent := initRedis()
+
+	// 限流（滑动窗口算法）
+	server.Use(ratelimit.NewBuilder(limiter.NewRedisSlidingWindowLimiter(redisCilent, time.Second, 1000)).Build())
 
 	web.RegisterRouters(server, db)
 	// 下列代码已被封装
@@ -23,6 +32,14 @@ func main() {
 	//server.POST("/users/edit/:id", userHandler.Edit)
 	// END
 	server.Run(":8080")
+}
+
+func initRedis() *redis.Client {
+	return redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
 }
 
 func initDB() *gorm.DB {
