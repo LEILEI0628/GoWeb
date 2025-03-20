@@ -17,6 +17,7 @@ func NewLoginMiddlewareJWTBuilder() *LoginMiddlewareJWTBuilder {
 	return &LoginMiddlewareJWTBuilder{}
 }
 
+// 终结方法
 func (loginJWTBuilder LoginMiddlewareJWTBuilder) Build() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		for _, path := range loginJWTBuilder.paths {
@@ -73,6 +74,7 @@ func (loginJWTBuilder LoginMiddlewareJWTBuilder) Build() gin.HandlerFunc {
 	}
 }
 
+// 中间方法
 func (loginJWTBuilder LoginMiddlewareJWTBuilder) IgnorePaths(path string) *LoginMiddlewareJWTBuilder {
 	loginJWTBuilder.paths = append(loginJWTBuilder.paths, path)
 	return &loginJWTBuilder

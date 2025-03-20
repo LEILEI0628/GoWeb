@@ -3,27 +3,21 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
-	"golang-web-learn/redbook/internal/web"
-	"golang-web-learn/redbook/pkg/ginx/middleware/ratelimit"
-	"golang-web-learn/redbook/pkg/limiter"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"time"
+	"net/http"
 )
 
+// 编译命令：GOOS=linux GOARCH=arm go build -o redbook .
 func main() {
 	server := gin.Default()
 
-	db := initDB()
-
-	redisClient := initRedis()
-
 	// 限流（滑动窗口算法）使用redis统计请求数量
-	server.Use(ratelimit.
-		NewBuilder(limiter.NewRedisSlidingWindowLimiter(redisClient, time.Second, 1000)).
-		Build())
+	//server.Use(ratelimit.
+	//	NewBuilder(limiter.NewRedisSlidingWindowLimiter(redisClient, time.Second, 1000)).
+	//	Build())
 
-	web.RegisterRouters(server, db)
+	//web.RegisterRouters(server, db)
 	// 下列代码已被封装
 	// START
 	//userHandler := web.UserHandler{}
@@ -33,6 +27,9 @@ func main() {
 	//server.GET("/users/profile/:id", userHandler.Profile)
 	//server.POST("/users/edit/:id", userHandler.Edit)
 	// END
+	server.GET("/hello", func(context *gin.Context) {
+		context.String(http.StatusOK, "hello world")
+	})
 	server.Run(":8080")
 }
 
