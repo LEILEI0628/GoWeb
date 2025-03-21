@@ -25,7 +25,7 @@ func (b GlobalMiddlewareBuilder) ResolveCORS() gin.HandlerFunc {
 				// 开发环境：允许域名前缀是"http://localhost"
 				return true
 			}
-			return strings.Contains(origin, "staycool.top") // 公司域名
+			return strings.Contains(origin, "redbook.com") // 公司域名
 		},
 		MaxAge: 12 * time.Hour,
 	})

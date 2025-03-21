@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
+	"golang-web-learn/redbook/config"
 	"golang-web-learn/redbook/internal/web"
 	"golang-web-learn/redbook/pkg/ginx/middleware/ratelimit"
 	"golang-web-learn/redbook/pkg/limiter"
@@ -42,14 +43,14 @@ func main() {
 
 func initRedis() *redis.Client {
 	return redis.NewClient(&redis.Options{
-		Addr:     "redbook-redis:16379",
+		Addr:     config.Config.Redis.Addr,
 		Password: "",
 		DB:       0,
 	})
 }
 
 func initDB() *gorm.DB {
-	db, err := gorm.Open(mysql.Open("root:20010628@tcp(redbook-mysql:13306)/redbook"))
+	db, err := gorm.Open(mysql.Open(config.Config.DB.DSN))
 	if err != nil {
 		// panic相当于整个goroutine结束
 		// panic只会出现在初始化的过程中（一旦初始化出错，就没必要启动了）
