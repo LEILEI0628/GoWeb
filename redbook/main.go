@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/redis/go-redis/v9"
+	redis "github.com/redis/go-redis/v9"
 	"golang-web-learn/redbook/config"
 	"golang-web-learn/redbook/internal/web"
 	"golang-web-learn/redbook/pkg/ginx/middleware/ratelimit"
@@ -58,7 +58,7 @@ func initDB() *gorm.DB {
 	}
 
 	// 建表
-	//err := dao.InitUserTable(db)
+	//err = dao.InitUserTable(db)
 	//if err != nil {
 	//	panic(err)
 	//}
