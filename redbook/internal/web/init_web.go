@@ -24,6 +24,7 @@ func RegisterRouters(server *gin.Engine, db *gorm.DB) {
 	server.Use(middleware.NewLoginMiddlewareJWTBuilder(). // 校验JWT
 								IgnorePaths("/users/login"). // 链式调用，不同的server可定制（扩展性）
 								IgnorePaths("/users/signup").
+								IgnorePaths("/hello").
 								Build()) // Builder模式为了解决复杂结构构建问题
 
 	initUserRouters(server, db).RegisterUserRouters()
