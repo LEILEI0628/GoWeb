@@ -2,7 +2,6 @@ package web
 
 import (
 	"errors"
-	"fmt"
 	regexp "github.com/dlclark/regexp2" // 自带的regexp无法处理复杂正则
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -172,7 +171,16 @@ func (userHandler *UserHandler) ProfileByJWT(context *gin.Context) {
 		return
 	}
 	UID := claims.UID
-	context.String(http.StatusOK, fmt.Sprintf("UID:%d的个人信息", UID))
+	userFind, err := userHandler.userService.Profile(context.Request.Context(), UID)
+	if errors.Is(err, service.ErrUserNotFound) {
+		context.String(http.StatusOK, "账号信息未找到")
+		return
+	}
+	if err != nil {
+		context.String(http.StatusOK, "系统错误")
+		return
+	}
+	context.JSON(http.StatusOK, userFind)
 
 }
 

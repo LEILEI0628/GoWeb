@@ -7,3 +7,7 @@ type User struct {
 	Email    string
 	Password string
 }
+
+type UserProfile struct {
+	Email string
+}

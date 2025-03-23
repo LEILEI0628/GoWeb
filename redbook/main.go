@@ -25,7 +25,7 @@ func main() {
 		NewBuilder(limiter.NewRedisSlidingWindowLimiter(redisClient, time.Second, 1000)).
 		Build())
 
-	web.RegisterRouters(server, db)
+	web.NewInitWeb(server, db, redisClient).RegisterRouters()
 	// 下列代码已被封装
 	// START
 	//userHandler := web.UserHandler{}

@@ -57,3 +57,10 @@ func (userDAO *UserDAO) FindByEmail(context context.Context, email string) (User
 	//err := userDAO.db.WithContext(context).First(&user, "email=?", email).Error // 等价写法
 	return user, err // 无需判断直接返回（已更改err名称）
 }
+
+func (userDAO *UserDAO) FindById(context context.Context, id int64) (User, error) {
+	var user User
+	// SELECT * FROM `users` WHERE `id`=?
+	err := userDAO.db.WithContext(context).Where("id=?", id).First(&user).Error
+	return user, err // 无需判断直接返回（已更改err名称）
+}
