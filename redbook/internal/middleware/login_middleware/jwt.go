@@ -1,31 +1,22 @@
-package middleware
+package login_middleware
 
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"golang-web-learn/redbook/internal/web/user"
+	web "golang-web-learn/redbook/internal/web/user"
 	"net/http"
 	"strings"
 	"time"
 )
 
-type LoginMiddlewareJWTBuilder struct { // 使用Build模式时不要对顺序进行任何的设定
-	paths []string
-}
-
-func NewLoginMiddlewareJWTBuilder() *LoginMiddlewareJWTBuilder {
-	return &LoginMiddlewareJWTBuilder{}
-}
-
-// 终结方法
-func (loginJWTBuilder LoginMiddlewareJWTBuilder) Build() gin.HandlerFunc {
+// BuildByJWT 终结方法（使用JWT进行校验）verificationKey:校验秘钥；expiresTime：JWT过期时间；leftTime：续约剩余时间
+func (loginMiddlewareBuilder *LoginMiddlewareBuilder) BuildByJWT(verificationKey string, expiresTime time.Duration, leftTime time.Duration) gin.HandlerFunc {
 	return func(context *gin.Context) {
-		for _, path := range loginJWTBuilder.paths {
+		for _, path := range loginMiddlewareBuilder.ignorePaths {
 			if context.Request.URL.Path == path {
 				return // 无需登录校验
 			}
 		}
-
 		// 使用JWT校验
 		tokenHeader := context.GetHeader("Authorization")
 		if tokenHeader == "" {
@@ -43,7 +34,7 @@ func (loginJWTBuilder LoginMiddlewareJWTBuilder) Build() gin.HandlerFunc {
 		claims := &web.UserClaims{}
 		// ParseWithClaims方法的claims参数一定要传指针，方法会对claims进行修改
 		token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
-			return []byte("7x9FpL2QaZ8rT4wY6vBcN1mK3jH5gD7s"), nil
+			return []byte(verificationKey), nil
 		})
 		if err != nil || !token.Valid || token == nil || claims.UID == 0 { // 过期Valid为false
 			// token检验错误
@@ -58,24 +49,17 @@ func (loginJWTBuilder LoginMiddlewareJWTBuilder) Build() gin.HandlerFunc {
 			return
 		}
 		// 通过校验
-		// token续约（每10分钟）
+		// token续约（还剩leftTime时）
 		now := time.Now()
-		if claims.ExpiresAt.Sub(now) < time.Minute*10 {
-			claims.ExpiresAt = jwt.NewNumericDate(time.Now().Add(12 * time.Hour))              // 12小时后过期
-			newTokenStr, err := token.SignedString([]byte("7x9FpL2QaZ8rT4wY6vBcN1mK3jH5gD7s")) // 重新生成token
+		if claims.ExpiresAt.Sub(now) < leftTime {
+			claims.ExpiresAt = jwt.NewNumericDate(time.Now().Add(expiresTime)) // expiresTime后过期
+			newTokenStr, err := token.SignedString([]byte(verificationKey))    // 重新生成token
 			if err != nil {
 				// 无需中断程序运行
 				// TODO 记录日志：续约失败
 			}
-			context.Header("x-jwt-token", newTokenStr)
+			context.Header("x-login_middleware-token", newTokenStr)
 		}
 		context.Set("claims", claims)
-
 	}
-}
-
-// 中间方法
-func (loginJWTBuilder LoginMiddlewareJWTBuilder) IgnorePaths(path string) *LoginMiddlewareJWTBuilder {
-	loginJWTBuilder.paths = append(loginJWTBuilder.paths, path)
-	return &loginJWTBuilder
 }

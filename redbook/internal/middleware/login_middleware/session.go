@@ -1,4 +1,4 @@
-package middleware
+package login_middleware
 
 import (
 	"github.com/gin-contrib/sessions"
@@ -7,17 +7,10 @@ import (
 	"time"
 )
 
-type LoginMiddlewareBuilder struct { // 使用Build模式时不要对顺序进行任何的设定
-	paths []string
-}
-
-func NewLoginMiddlewareBuilder() *LoginMiddlewareBuilder {
-	return &LoginMiddlewareBuilder{}
-}
-
-func (loginMiddlewareBuilder LoginMiddlewareBuilder) Build() gin.HandlerFunc {
+// BuildBySession 终结方法（使用Session进行校验）
+func (loginMiddlewareBuilder *LoginMiddlewareBuilder) BuildBySession(maxAgeSec int, leftTime time.Duration) gin.HandlerFunc {
 	return func(context *gin.Context) {
-		for _, path := range loginMiddlewareBuilder.paths {
+		for _, path := range loginMiddlewareBuilder.ignorePaths {
 			if context.Request.URL.Path == path {
 				return // 无需登录校验
 			}
@@ -44,7 +37,7 @@ func (loginMiddlewareBuilder LoginMiddlewareBuilder) Build() gin.HandlerFunc {
 			// 还没刷新过
 			session.Set("updateTime", now)
 			session.Options(sessions.Options{
-				MaxAge: 60 * 60 * 60,
+				MaxAge: maxAgeSec,
 			})
 			err := session.Save()
 			if err != nil {
@@ -58,10 +51,10 @@ func (loginMiddlewareBuilder LoginMiddlewareBuilder) Build() gin.HandlerFunc {
 			context.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		if now-updateTimeVal > 60*1000 { // 一分钟刷新一次
+		if now-updateTimeVal > leftTime.Milliseconds() { // 一分钟刷新一次
 			session.Set("updateTime", now)
 			session.Options(sessions.Options{
-				MaxAge: 60 * 60 * 60,
+				MaxAge: maxAgeSec,
 			})
 			err := session.Save()
 			if err != nil {
@@ -72,9 +65,4 @@ func (loginMiddlewareBuilder LoginMiddlewareBuilder) Build() gin.HandlerFunc {
 		}
 
 	}
-}
-
-func (loginMiddlewareBuilder LoginMiddlewareBuilder) IgnorePaths(path string) *LoginMiddlewareBuilder {
-	loginMiddlewareBuilder.paths = append(loginMiddlewareBuilder.paths, path)
-	return &loginMiddlewareBuilder
 }

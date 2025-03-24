@@ -18,7 +18,7 @@ func (b GlobalMiddlewareBuilder) ResolveCORS() gin.HandlerFunc {
 		// AllowHeaders:允许请求头中携带
 		AllowHeaders: []string{"Content-Type", "Authorization"},
 		// ExposeHeaders:允许响应标头暴露给浏览器
-		ExposeHeaders:    []string{"x-jwt-token"},
+		ExposeHeaders:    []string{"x-login_middleware-token"},
 		AllowCredentials: true, // 是否允许携带Cookie等
 		AllowOriginFunc: func(origin string) bool {
 			if strings.HasPrefix(origin, "http://localhost") {

@@ -5,7 +5,7 @@ import (
 	regexp "github.com/dlclark/regexp2" // 自带的regexp无法处理复杂正则
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	jwt "github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt/v5"
 	"golang-web-learn/redbook/internal/domain"
 	"golang-web-learn/redbook/internal/service"
 	"net/http"
@@ -20,7 +20,7 @@ type UserHandler struct {
 }
 
 func NewUserHandler(userService *service.UserService) *UserHandler { // 使用此方法可以提示忘记传参
-	const ( // 就近原则和最小化作用域原则
+	const (                                                          // 就近原则和最小化作用域原则
 		emailRegexPattern = `^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$` // ``比""简洁（无需转义）
 		//emailRegexPattern = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$"
 		passwordRegexPattern = `^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&.])[A-Za-z\d@$!%*#?&.]{8,72}$`
@@ -106,7 +106,7 @@ func (userHandler *UserHandler) SignInByJWT(context *gin.Context) {
 		return
 	}
 
-	context.Header("x-jwt-token", tokenStr)
+	context.Header("x-login_middleware-token", tokenStr)
 	context.String(http.StatusOK, "登录成功")
 }
 

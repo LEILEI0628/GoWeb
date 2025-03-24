@@ -1,12 +1,12 @@
 package main
 
 import (
+	"github.com/LEILEI0628/GinPro/middleware/limiter"
+	"github.com/LEILEI0628/GinPro/middleware/ratelimit"
 	"github.com/gin-gonic/gin"
-	redis "github.com/redis/go-redis/v9"
+	"github.com/redis/go-redis/v9"
 	"golang-web-learn/redbook/config"
 	"golang-web-learn/redbook/internal/web"
-	"golang-web-learn/redbook/pkg/ginx/middleware/ratelimit"
-	"golang-web-learn/redbook/pkg/limiter"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"net/http"
@@ -21,8 +21,7 @@ func main() {
 	db := initDB()
 
 	// 限流（滑动窗口算法）使用redis统计请求数量
-	server.Use(ratelimit.
-		NewBuilder(limiter.NewRedisSlidingWindowLimiter(redisClient, time.Second, 1000)).
+	server.Use(ratelimit.NewBuilder(limiter.NewRedisSlidingWindowLimiter(redisClient, time.Second, 1000)).
 		Build())
 
 	web.NewInitWeb(server, db, redisClient).RegisterRouters()

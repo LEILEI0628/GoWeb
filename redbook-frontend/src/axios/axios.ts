@@ -14,7 +14,7 @@ export interface Result<T> {
 
 
 instance.interceptors.response.use(function (resp) {
-    const newToken = resp.headers["x-jwt-token"]
+    const newToken = resp.headers["x-login_middleware-token"]
     const newRefreshToken = resp.headers["x-refresh-token"]
     if (newToken) {
         localStorage.setItem("token", newToken)
