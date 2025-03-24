@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/LEILEI0628/GinPro/middleware/limiter"
 	"github.com/LEILEI0628/GinPro/middleware/ratelimit"
-	"github.com/LEILEI0628/GoWeb/config"
+	"github.com/LEILEI0628/GoWeb/internal/config"
 	"github.com/LEILEI0628/GoWeb/internal/web"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
