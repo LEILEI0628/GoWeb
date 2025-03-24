@@ -2,6 +2,7 @@ package web
 
 import (
 	"errors"
+	"github.com/LEILEI0628/GinPro/middleware/session"
 	regexp "github.com/dlclark/regexp2" // 自带的regexp无法处理复杂正则
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -131,13 +132,10 @@ func (userHandler *UserHandler) SignInBySession(context *gin.Context) {
 	}
 
 	// 创建session
-	session := sessions.Default(context)
-	session.Set("userId", userFind.Id)
-	session.Options(sessions.Options{
+	err = session.CreateSession(context, userFind.Id, sessions.Options{
 		//Secure: true, // 使用https协议
 		MaxAge: 60 * 60 * 60,
 	})
-	err = session.Save()
 	if err != nil {
 		context.String(http.StatusOK, "系统错误")
 		return

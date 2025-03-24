@@ -1,4 +1,4 @@
-package login_middleware
+package jwt
 
 import (
 	"github.com/gin-gonic/gin"
@@ -9,10 +9,27 @@ import (
 	"time"
 )
 
-// BuildByJWT 终结方法（使用JWT进行校验）verificationKey:校验秘钥；expiresTime：JWT过期时间；leftTime：续约剩余时间
-func (loginMiddlewareBuilder *LoginMiddlewareBuilder) BuildByJWT(verificationKey string, expiresTime time.Duration, leftTime time.Duration) gin.HandlerFunc {
+type Builder struct { // 使用Build模式时不要对顺序进行任何的设定
+	ignorePaths []string
+}
+
+func NewBuilder() *Builder {
+	return &Builder{}
+}
+
+// IgnorePaths 要忽略的路径
+func (builder *Builder) IgnorePaths(path string) *Builder {
+	// 中间方法
+	// 注：方法接收器使用值接收器时每次调用方法都会创建一个副本，当进行取地址操作时可以实现功能，
+	// 返回的是新副本的指针，但原实例并未更改，这也就造成了资源浪费，因此强烈建议使用指针接收器
+	builder.ignorePaths = append(builder.ignorePaths, path)
+	return builder
+}
+
+// Build 终结方法（使用JWT进行校验）verificationKey:校验秘钥；expiresTime：JWT过期时间；leftTime：续约剩余时间
+func (builder *Builder) Build(verificationKey string, expiresTime time.Duration, leftTime time.Duration) gin.HandlerFunc {
 	return func(context *gin.Context) {
-		for _, path := range loginMiddlewareBuilder.ignorePaths {
+		for _, path := range builder.ignorePaths {
 			if context.Request.URL.Path == path {
 				return // 无需登录校验
 			}
