@@ -14,13 +14,14 @@ export interface Result<T> {
 
 
 instance.interceptors.response.use(function (resp) {
-    const newToken = resp.headers["x-login_middleware-token"]
+    const newToken = resp.headers["x-jwt-token"]
     const newRefreshToken = resp.headers["x-refresh-token"]
     if (newToken) {
         localStorage.setItem("token", newToken)
     }
     if (newRefreshToken) {
-        localStorage.setItem("refresh_token", newRefreshToken)
+        // localStorage.setItem("refresh_token", newRefreshToken)
+        localStorage.setItem("token", newRefreshToken)
     }
     if (resp.status == 401) {
         window.location.href="/users/login"

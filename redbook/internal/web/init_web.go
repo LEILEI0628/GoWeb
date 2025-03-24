@@ -2,10 +2,9 @@ package web
 
 // 另一种做法是将该文件放置在main.go同级
 import (
-	"github.com/LEILEI0628/GinPro/middleware/session"
+	jwtx "github.com/LEILEI0628/GinPro/middleware/jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
-	"golang-web-learn/redbook/config"
 	"golang-web-learn/redbook/internal/middleware"
 	"golang-web-learn/redbook/internal/repository"
 	"golang-web-learn/redbook/internal/repository/cache"
@@ -35,25 +34,28 @@ func (initWeb InitWeb) RegisterRouters() {
 	globalMiddleware := middleware.NewGlobalMiddlewareBuilder()
 	initWeb.server.Use(globalMiddleware.ResolveCORS()) // 解决跨域问题
 
-	sessionConfig := session.Config{
-		StorageType: session.Redis,
-		AuthKey:     []byte("7x9FpL2QaZ8rT4wY6vBcN1mK3jH5gD7s"),
-		EncryptKey:  []byte("qW3eRtY8uI0oP9aSsDfGhJkL4zXcV6bN"),
-		RedisOpts: session.RedisOpts{
-			MaxIdle:  16,
-			Network:  "tcp",
-			Addr:     config.Config.Redis.Addr,
-			Password: "",
-		},
-	}
-	initWeb.server.Use(session.SessionStore(sessionConfig)) // 添加session（cookie中）（存储使用redis）
-	initWeb.server.Use(session.NewBuilder().                // 校验session
-		//initWeb.server.Use(jwt.NewBuilder(). // 校验JWT
+	initWeb.server.Use(jwtx.NewBuilder( // 校验JWT
+		jwtx.WithVerificationKey("7x9FpL2QaZ8rT4wY6vBcN1mK3jH5gD7s"),
+		jwtx.WithExpiresTime(time.Hour*12),
+		jwtx.WithLeftTime(time.Minute*10)).
 		IgnorePaths("/users/login"). // 链式调用，不同的server可定制（扩展性）
 		IgnorePaths("/users/signup").
-		IgnorePaths("/hello").
-		Build(60*60, time.Minute)) // 使用session校验
-	//Build("7x9FpL2QaZ8rT4wY6vBcN1mK3jH5gD7s", time.Hour*12, time.Minute*10)) // Builder模式为了解决复杂结构构建问题
+		IgnorePaths("/hello").Build()) // Builder模式为了解决复杂结构构建问题
+
+	//sessionConfig := session.Config{
+	//	StorageType: session.Redis,
+	//	AuthKey:     []byte("7x9FpL2QaZ8rT4wY6vBcN1mK3jH5gD7s"),
+	//	EncryptKey:  []byte("qW3eRtY8uI0oP9aSsDfGhJkL4zXcV6bN"),
+	//	RedisOpts: session.RedisOpts{
+	//		MaxIdle:  16,
+	//		Network:  "tcp",
+	//		Addr:     config.Config.Redis.Addr,
+	//		Password: "",
+	//	},
+	//}
+	//initWeb.server.Use(session.SessionStore(sessionConfig)) // 添加session（cookie中）（存储使用redis）
+	//initWeb.server.Use(session.NewBuilder().                // 校验session
+	//Build(60*60, time.Minute)) // 使用session校验
 
 	initWeb.initUserRouters().RegisterUserRouters()
 

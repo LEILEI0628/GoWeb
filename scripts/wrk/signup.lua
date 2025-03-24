@@ -4,8 +4,8 @@ wrk.headers["Content-Type"] = "application/json"
 local random = math.random
 local function uuid()
     local template ='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
-    return string.gsub(template, '[xy]', function (c)
-        local v = (c == 'x') and random(0, 0xf) or random(8, 0xb)
+    return string.gsub(template, '[xy]', function (context)
+        local v = (context == 'x') and random(0, 0xf) or random(8, 0xb)
         return string.format('%x', v)
     end)
 end
@@ -26,5 +26,5 @@ end
 function response()
 
 end
--- -t：线程数量 -d：持续时间 -c：并发数 -s：测试脚本
+-- -t：线程数量 -d：持续时间 -context：并发数 -s：测试脚本
 -- wrk -t1 -d1s -c2 -s ./scripts/wrk/signup.lua http://localhost:8080/users/signup

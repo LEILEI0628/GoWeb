@@ -2,6 +2,7 @@ package web
 
 import (
 	"errors"
+	jwtx "github.com/LEILEI0628/GinPro/middleware/jwt"
 	"github.com/LEILEI0628/GinPro/middleware/session"
 	regexp "github.com/dlclark/regexp2" // 自带的regexp无法处理复杂正则
 	"github.com/gin-contrib/sessions"
@@ -92,22 +93,21 @@ func (userHandler *UserHandler) SignInByJWT(context *gin.Context) {
 		return
 	}
 
-	// 创建JWT token
-	userClaims := UserClaims{
+	userClaims := jwtx.UserClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(12 * time.Hour)), // 12小时后过期
 		},
 		UID:       userFind.Id,
 		UserAgent: context.Request.UserAgent(),
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS512, userClaims)
-	tokenStr, err := token.SignedString([]byte("7x9FpL2QaZ8rT4wY6vBcN1mK3jH5gD7s"))
+
+	tokenStr, err := jwtx.CreateJWT([]byte("7x9FpL2QaZ8rT4wY6vBcN1mK3jH5gD7s"), userClaims)
 	if err != nil {
 		context.String(http.StatusInternalServerError, "系统错误")
 		return
 	}
 
-	context.Header("x-login_middleware-token", tokenStr)
+	context.Header("x-jwt-token", tokenStr)
 	context.String(http.StatusOK, "登录成功")
 }
 
@@ -162,8 +162,8 @@ func (userHandler *UserHandler) Edit(context *gin.Context) {
 }
 
 func (userHandler *UserHandler) ProfileByJWT(context *gin.Context) {
-	c, _ := context.Get("claims") // 发生error则claims为空，在类型断言时也可判断，故可以忽略此处错误
-	claims, ok := c.(*UserClaims) // 类型断言
+	c, _ := context.Get("claims")      // 发生error则claims为空，在类型断言时也可判断，故可以忽略此处错误
+	claims, ok := c.(*jwtx.UserClaims) // 类型断言
 	if !ok {
 		context.String(http.StatusOK, "系统错误")
 		return
@@ -221,11 +221,4 @@ func (userHandler *UserHandler) checkMessage(context *gin.Context, email string,
 		return errors.New("密码格式错误")
 	}
 	return nil
-}
-
-type UserClaims struct {
-	jwt.RegisteredClaims // 组合RegisteredClaims可以更简洁的实现Claims接口
-	// 下列是自定义字段
-	UID       int64
-	UserAgent string
 }
