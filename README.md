@@ -1,2 +1,2 @@
-# golang-web-learn
-Golang Web学习
+# GoWeb
+Go后端通用框架

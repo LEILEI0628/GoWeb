@@ -1,0 +1,13 @@
+package domain
+
+// User User领域对象（DDD中的聚合根）
+// 其他叫法：BO（business object）
+type User struct {
+	Id       int64
+	Email    string
+	Password string
+}
+
+type UserProfile struct {
+	Email string
+}

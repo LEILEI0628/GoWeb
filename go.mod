@@ -1,4 +1,4 @@
-module golang-web-learn
+module github.com/LEILEI0628/GoWeb
 
 go 1.24
 
