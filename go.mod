@@ -3,7 +3,7 @@ module github.com/LEILEI0628/GoWeb
 go 1.24
 
 require (
-	github.com/LEILEI0628/GinPro v0.3.1
+	github.com/LEILEI0628/GinPro v0.4.0
 	github.com/dlclark/regexp2 v1.11.5
 	github.com/gin-contrib/cors v1.7.4
 	github.com/gin-contrib/sessions v1.0.2
