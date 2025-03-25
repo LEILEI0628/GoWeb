@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"fmt"
+	"github.com/LEILEI0628/GinPro/middleware/cache"
 	"github.com/LEILEI0628/GoWeb/internal/domain"
 	"github.com/LEILEI0628/GoWeb/internal/repository/cache"
 	"github.com/LEILEI0628/GoWeb/internal/repository/dao"
@@ -9,7 +11,7 @@ import (
 
 var ErrUserEmailDuplicated = dao.ErrUserEmailDuplicated
 var ErrUserNotFound = dao.ErrUserNotFound
-var ErrKeyNotExist = cache.ErrKeyNotExist
+var ErrKeyNotExist = cachex.ErrKeyNotExist
 
 type UserRepository struct {
 	userDAO   *dao.UserDAO
@@ -22,22 +24,27 @@ func NewUserRepository(userDAO *dao.UserDAO, userCache *cache.UserCache) *UserRe
 
 func (userRepository *UserRepository) FindById(context context.Context, id int64) (domain.User, error) {
 	// 从cache中寻找
+	// 获取用户缓存
 	user, err := userRepository.userCache.Get(context, id)
-	if err == nil { // 从cache中找到数据
+	if err == nil {
+		// 从cache中找到数据
+		fmt.Println("cache Find")
 		return user, err
 	}
-	//if errors.Is(err, ErrKeyNotExist) { // 从cache中没找到数据
-	// 从dao中寻找并写回cache
+	//if errors.Is(err, cachex.ErrKeyNotExist) { // 处理缓存未命中：从cache中没找到数据
+	// 设置用户缓存：从dao中寻找并写回cache
 	userEntity, err := userRepository.userDAO.FindById(context, id)
 	if err != nil {
 		return domain.User{}, err
 	}
 	user = domain.User{Id: userEntity.Id, Email: userEntity.Email, Password: userEntity.Password}
-	err = userRepository.userCache.Set(context, user)
+	err = userRepository.userCache.Set(context, user.Id, user)
 	if err != nil {
+		fmt.Println("cache Set Filed")
 		// 缓存Set失败（记录日志做监控即可，为了防止缓存崩溃的可能）
 		// TODO 记录日志
 	}
+	fmt.Println("cache Set Success")
 	return user, err
 	//} // 注释掉此处if语句代表不管缓存发生什么问题都从数据库加载
 	// 当缓存发生除ErrKeyNotExist的错误时由两种解决方案：

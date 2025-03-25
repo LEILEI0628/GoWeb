@@ -63,7 +63,7 @@ func (initWeb InitWeb) RegisterRouters() {
 
 func (initWeb InitWeb) initUserRouters() *web.UserRouters {
 	userDAO := dao.NewUserDAO(initWeb.db)
-	userCache := cache.NewUserCache(initWeb.redisClient, time.Minute*15)
+	userCache := cache.InitUserCache(initWeb.redisClient, time.Minute*15)
 	userRepository := repository.NewUserRepository(userDAO, userCache)
 	userService := service.NewUserService(userRepository)
 	userHandler := web.NewUserHandler(userService)
