@@ -2,11 +2,13 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"github.com/LEILEI0628/GinPro/middleware/cache"
 	"github.com/LEILEI0628/GoWeb/internal/domain"
 	"github.com/LEILEI0628/GoWeb/internal/repository/cache"
 	"github.com/LEILEI0628/GoWeb/internal/repository/dao"
+	"time"
 )
 
 var ErrUserEmailDuplicated = dao.ErrUserEmailDuplicated
@@ -33,11 +35,11 @@ func (userRepository *UserRepository) FindById(context context.Context, id int64
 	}
 	//if errors.Is(err, cachex.ErrKeyNotExist) { // 处理缓存未命中：从cache中没找到数据
 	// 设置用户缓存：从dao中寻找并写回cache
-	userEntity, err := userRepository.userDAO.FindById(context, id)
+	ue, err := userRepository.userDAO.FindById(context, id)
 	if err != nil {
 		return domain.User{}, err
 	}
-	user = domain.User{Id: userEntity.Id, Email: userEntity.Email, Password: userEntity.Password}
+	ud := userRepository.entityToDomain(ue)
 	err = userRepository.userCache.Set(context, user.Id, user)
 	if err != nil {
 		fmt.Println("cache Set Filed")
@@ -45,7 +47,7 @@ func (userRepository *UserRepository) FindById(context context.Context, id int64
 		// TODO 记录日志
 	}
 	fmt.Println("cache Set Success")
-	return user, err
+	return ud, err
 	//} // 注释掉此处if语句代表不管缓存发生什么问题都从数据库加载
 	// 当缓存发生除ErrKeyNotExist的错误时由两种解决方案：
 	// 1.从数据库加载（偶发错误友好），极个别缓存错误可以解决，但当缓存真的崩溃时，要做好兜底保护数据库（大量访问）
@@ -54,10 +56,8 @@ func (userRepository *UserRepository) FindById(context context.Context, id int64
 }
 
 func (userRepository *UserRepository) Create(context context.Context, user domain.User) error {
-	return userRepository.userDAO.Insert(context, dao.User{
-		Email:    user.Email,
-		Password: user.Password,
-	})
+	ue := userRepository.domainToEntity(user)
+	return userRepository.userDAO.Insert(context, ue)
 
 	// TODO 操作缓存
 }
@@ -67,5 +67,13 @@ func (userRepository *UserRepository) FindByEmail(context context.Context, email
 	if err != nil {
 		return domain.User{}, err
 	}
-	return domain.User{Id: user.Id, Email: user.Email, Password: user.Password}, nil
+	return userRepository.entityToDomain(user), nil
+}
+
+func (userRepository *UserRepository) domainToEntity(u domain.User) dao.User {
+	return dao.User{Id: u.Id, Email: sql.NullString{String: u.Email, Valid: u.Email != ""}, Phone: sql.NullString{String: u.Phone, Valid: u.Phone != ""}, Password: u.Password, CreateTime: u.Createtime.UnixMilli()}
+}
+
+func (userRepository *UserRepository) entityToDomain(u dao.User) domain.User {
+	return domain.User{Id: u.Id, Email: u.Email.String, Phone: u.Phone.String, Password: u.Password, Createtime: time.UnixMilli(u.CreateTime)}
 }

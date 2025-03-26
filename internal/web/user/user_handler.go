@@ -93,15 +93,7 @@ func (userHandler *UserHandler) SignInByJWT(context *gin.Context) {
 		return
 	}
 
-	userClaims := jwtx.UserClaims{
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(12 * time.Hour)), // 12小时后过期
-		},
-		UID:       userFind.Id,
-		UserAgent: context.Request.UserAgent(),
-	}
-
-	tokenStr, err := jwtx.CreateJWT([]byte("7x9FpL2QaZ8rT4wY6vBcN1mK3jH5gD7s"), userClaims)
+	tokenStr, err := userHandler.getJWTTokenStr(context, userFind)
 	if err != nil {
 		context.String(http.StatusInternalServerError, "系统错误")
 		return
@@ -109,6 +101,17 @@ func (userHandler *UserHandler) SignInByJWT(context *gin.Context) {
 
 	context.Header("x-jwt-token", tokenStr)
 	context.String(http.StatusOK, "登录成功")
+}
+
+func (userHandler *UserHandler) getJWTTokenStr(context *gin.Context, userFind domain.User) (string, error) {
+	userClaims := jwtx.UserClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(12 * time.Hour)), // 12小时后过期
+		},
+		UID:       userFind.Id,
+		UserAgent: context.Request.UserAgent(),
+	}
+	return jwtx.CreateJWT([]byte("7x9FpL2QaZ8rT4wY6vBcN1mK3jH5gD7s"), userClaims)
 }
 
 func (userHandler *UserHandler) SignInBySession(context *gin.Context) {
@@ -168,6 +171,7 @@ func (userHandler *UserHandler) ProfileByJWT(context *gin.Context) {
 		context.String(http.StatusOK, "系统错误")
 		return
 	}
+
 	UID := claims.UID
 	userFind, err := userHandler.userService.Profile(context.Request.Context(), UID)
 	if errors.Is(err, service.ErrUserNotFound) {
