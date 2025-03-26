@@ -30,7 +30,7 @@ func InitWebServer() *gin.Engine {
 	userService := service.NewUserService(userRepository)
 	userHandler := handler.NewUserHandler(userService)
 	userRouters := router.NewUserRouters(userHandler)
-	routers := web.NewRouters(userRouters)
-	engine := ioc.InitGin(v, routers)
+	registerRouters := web.NewRegisterRouters(userRouters)
+	engine := ioc.InitGin(v, registerRouters)
 	return engine
 }

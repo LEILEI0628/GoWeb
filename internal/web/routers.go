@@ -5,14 +5,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Routers struct {
-	userRouters *router.UserRouters
+type Routers interface {
+	RegisterRouters(server *gin.Engine)
 }
 
-func NewRouters(userRouters *router.UserRouters) *Routers { // 后期需要不断添加routers
-	return &Routers{userRouters: userRouters}
+type RegisterRouters struct {
+	routers []Routers
 }
 
-func (routers *Routers) RegisterRouters(server *gin.Engine) {
-	routers.userRouters.RegisterUserRouters(server) // 后期需要不断添加routers
+func NewRegisterRouters(userRouters *router.UserRouters) *RegisterRouters { // 后期需要不断添加routers
+	routers := []Routers{userRouters}
+	return &RegisterRouters{routers: routers}
+}
+
+func (rr *RegisterRouters) Register(server *gin.Engine) {
+	for _, v := range rr.routers {
+		v.RegisterRouters(server)
+	}
 }

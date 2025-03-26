@@ -14,7 +14,7 @@ func NewUserRouters(userHandler *handler.UserHandler) *UserRouters {
 	return &UserRouters{userHandler: userHandler}
 }
 
-func (userRouters UserRouters) RegisterUserRouters(server *gin.Engine) {
+func (userRouters UserRouters) RegisterRouters(server *gin.Engine) {
 	// 分组路由
 	userGroup := server.Group("/users")
 	userRouters.signUpRouter(userGroup)

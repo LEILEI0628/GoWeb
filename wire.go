@@ -34,7 +34,7 @@ func InitWebServer() *gin.Engine {
 		router.NewUserRouters,
 
 		// 初始化Routers、中间件、server
-		web.NewRouters,
+		web.NewRegisterRouters,
 		ioc.InitMiddleware,
 		ioc.InitGin,
 	)
