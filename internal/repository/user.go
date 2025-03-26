@@ -30,7 +30,7 @@ func (userRepository *UserRepository) FindById(context context.Context, id int64
 	uc, err := userRepository.userCache.Get(context, id)
 	if err == nil {
 		// 从cache中找到数据
-		fmt.Println("cache Find")
+		fmt.Println("Cache Find")
 		return uc, err
 	}
 	//if errors.Is(err, cachex.ErrKeyNotExist) { // 处理缓存未命中：从cache中没找到数据
@@ -42,11 +42,11 @@ func (userRepository *UserRepository) FindById(context context.Context, id int64
 	ud := userRepository.entityToDomain(ue)
 	err = userRepository.userCache.Set(context, ud.Id, ud)
 	if err != nil {
-		fmt.Println("cache Set Filed")
+		fmt.Println("Cache Set Filed")
 		// 缓存Set失败（记录日志做监控即可，为了防止缓存崩溃的可能）
 		// TODO 记录日志
 	}
-	fmt.Println("cache Set Success")
+	fmt.Println("Cache Set Success")
 	return ud, err
 	//} // 注释掉此处if语句代表不管缓存发生什么问题都从数据库加载
 	// 当缓存发生除ErrKeyNotExist的错误时由两种解决方案：
