@@ -4,16 +4,16 @@ import (
 	"github.com/LEILEI0628/GinPro/middleware/limiter"
 	"github.com/LEILEI0628/GinPro/middleware/ratelimit"
 	"github.com/LEILEI0628/GoWeb/internal/middleware"
-	"github.com/LEILEI0628/GoWeb/internal/web/router"
+	"github.com/LEILEI0628/GoWeb/internal/web"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"time"
 )
 
-func InitGin(middleware []gin.HandlerFunc, routers *router.UserRouters) *gin.Engine {
+func InitGin(middleware []gin.HandlerFunc, routers *web.Routers) *gin.Engine {
 	server := gin.Default()
 	server.Use(middleware...)
-	routers.RegisterUserRouters(server)
+	routers.RegisterRouters(server)
 	return server
 }
 

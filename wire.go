@@ -7,6 +7,7 @@ import (
 	"github.com/LEILEI0628/GoWeb/internal/repository/cache"
 	"github.com/LEILEI0628/GoWeb/internal/repository/dao"
 	"github.com/LEILEI0628/GoWeb/internal/service"
+	"github.com/LEILEI0628/GoWeb/internal/web"
 	"github.com/LEILEI0628/GoWeb/internal/web/handler"
 	"github.com/LEILEI0628/GoWeb/internal/web/router"
 	"github.com/LEILEI0628/GoWeb/ioc"
@@ -16,19 +17,24 @@ import (
 
 func InitWebServer() *gin.Engine {
 	wire.Build(
-		// 最基础的第三方依赖
+		// 初始化最基础的第三方依赖
 		ioc.InitDB, ioc.InitRedis,
+
 		// 初始化DAO
 		dao.NewUserDAO,
-
+		// 初始化Cache
 		cache.NewUserCache,
-
+		// 初始化Repository
 		repository.NewUserRepository,
-
+		// 初始化Service
 		service.NewUserService,
-
+		// 初始化Handler
 		handler.NewUserHandler,
+		// 初始化Routers
 		router.NewUserRouters,
+
+		// 初始化Routers、中间件、server
+		web.NewRouters,
 		ioc.InitMiddleware,
 		ioc.InitGin,
 	)

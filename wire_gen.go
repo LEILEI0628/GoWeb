@@ -11,6 +11,7 @@ import (
 	"github.com/LEILEI0628/GoWeb/internal/repository/cache"
 	"github.com/LEILEI0628/GoWeb/internal/repository/dao"
 	"github.com/LEILEI0628/GoWeb/internal/service"
+	"github.com/LEILEI0628/GoWeb/internal/web"
 	"github.com/LEILEI0628/GoWeb/internal/web/handler"
 	"github.com/LEILEI0628/GoWeb/internal/web/router"
 	"github.com/LEILEI0628/GoWeb/ioc"
@@ -29,6 +30,7 @@ func InitWebServer() *gin.Engine {
 	userService := service.NewUserService(userRepository)
 	userHandler := handler.NewUserHandler(userService)
 	userRouters := router.NewUserRouters(userHandler)
-	engine := ioc.InitGin(v, userRouters)
+	routers := web.NewRouters(userRouters)
+	engine := ioc.InitGin(v, routers)
 	return engine
 }
