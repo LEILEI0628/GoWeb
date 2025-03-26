@@ -10,11 +10,12 @@ import (
 
 type UserCache = cachex.RedisCache[domain.User, int64]
 
-func InitUserCache(redisClient *redis.Client, expiration time.Duration) *UserCache {
+func NewUserCache(client redis.Cmdable) *UserCache {
+	expiration := time.Minute * 15
 	// 用户缓存初始化方法
 	userKeyFunc := func(id int64) string {
 		return fmt.Sprintf("user:info:%d", id)
 	}
-	return cachex.NewRedisCache[domain.User, int64](redisClient, expiration, userKeyFunc)
+	return cachex.NewRedisCache[domain.User, int64](client, expiration, userKeyFunc)
 
 }

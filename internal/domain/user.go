@@ -9,9 +9,10 @@ type User struct {
 	Email      string
 	Phone      string
 	Password   string
-	Createtime time.Time
+	CreateTime time.Time
 }
 
 type UserProfile struct {
 	Email string
+	Phone string
 }

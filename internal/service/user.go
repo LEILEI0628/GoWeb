@@ -51,5 +51,5 @@ func (userService *UserService) Profile(context context.Context, id int64) (doma
 	if err != nil {
 		return domain.UserProfile{}, err
 	}
-	return domain.UserProfile{Email: user.Email}, err
+	return domain.UserProfile{Email: user.Email, Phone: user.Phone}, err
 }

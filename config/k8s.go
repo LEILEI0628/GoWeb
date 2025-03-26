@@ -1,6 +1,7 @@
 //go:build k8s
 
 // 使用k8s编译标签
+
 package config
 
 var Config = config{

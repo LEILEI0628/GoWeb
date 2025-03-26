@@ -1,22 +1,22 @@
-package web
+package router
 
 import (
+	"github.com/LEILEI0628/GoWeb/internal/web/handler"
 	"github.com/gin-gonic/gin"
 )
 
 // UserRouters User相关的路由
 type UserRouters struct {
-	userHandler *UserHandler
-	server      *gin.Engine
+	userHandler *handler.UserHandler
 }
 
-func NewUserRouters(userHandler *UserHandler, server *gin.Engine) *UserRouters {
-	return &UserRouters{userHandler: userHandler, server: server}
+func NewUserRouters(userHandler *handler.UserHandler) *UserRouters {
+	return &UserRouters{userHandler: userHandler}
 }
 
-func (userRouters UserRouters) RegisterUserRouters() {
+func (userRouters UserRouters) RegisterUserRouters(server *gin.Engine) {
 	// 分组路由
-	userGroup := userRouters.server.Group("/users")
+	userGroup := server.Group("/users")
 	userRouters.signUpRouter(userGroup)
 	userRouters.signInRouter(userGroup)
 	userRouters.signOutRouter(userGroup)
