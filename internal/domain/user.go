@@ -9,10 +9,16 @@ type User struct {
 	Email      string
 	Phone      string
 	Password   string
+	NickName   string
+	Birthday   string
+	AboutMe    string
 	CreateTime time.Time
 }
 
 type UserProfile struct {
-	Email string
-	Phone string
+	Email    string
+	Phone    string
+	NickName string
+	Birthday string
+	AboutMe  string
 }

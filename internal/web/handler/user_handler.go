@@ -146,7 +146,7 @@ func (handler *UserHandler) SignInBySession(ctx *gin.Context) {
 	ctx.String(http.StatusOK, "登录成功")
 }
 
-func (handler *UserHandler) SignOut(ctx *gin.Context) {
+func (handler *UserHandler) SignOutByJWT(ctx *gin.Context) {
 	// 注销session（设置过期）
 	session := sessions.Default(ctx)
 	session.Options(sessions.Options{
@@ -160,29 +160,47 @@ func (handler *UserHandler) SignOut(ctx *gin.Context) {
 	ctx.String(http.StatusOK, "退出成功")
 }
 
-func (handler *UserHandler) Edit(ctx *gin.Context) {
+func (handler *UserHandler) EditByJWT(ctx *gin.Context) {
+	var userReq domain.UserProfile
+	if err := ctx.Bind(&userReq); err != nil {
+		return
+	}
 
+	c, _ := ctx.Get("claims")
+	claims, ok := c.(*jwtx.UserClaims)
+	if !ok {
+		ctx.String(http.StatusOK, "系统错误")
+		return
+	}
+	UID := claims.UID
+
+	err := handler.service.Edit(ctx.Request.Context(), UID, userReq)
+	if err != nil {
+		ctx.String(http.StatusOK, "系统错误")
+		return
+	}
+	ctx.JSON(http.StatusOK, map[string]int{"code": 0})
 }
 
-func (handler *UserHandler) ProfileByJWT(context *gin.Context) {
-	c, _ := context.Get("claims")      // 发生error则claims为空，在类型断言时也可判断，故可以忽略此处错误
+func (handler *UserHandler) ProfileByJWT(ctx *gin.Context) {
+	c, _ := ctx.Get("claims")          // 发生error则claims为空，在类型断言时也可判断，故可以忽略此处错误
 	claims, ok := c.(*jwtx.UserClaims) // 类型断言
 	if !ok {
-		context.String(http.StatusOK, "系统错误")
+		ctx.String(http.StatusOK, "系统错误")
 		return
 	}
 
 	UID := claims.UID
-	userFind, err := handler.service.Profile(context.Request.Context(), UID)
+	userFind, err := handler.service.Profile(ctx.Request.Context(), UID)
 	if errors.Is(err, service.ErrUserNotFound) {
-		context.String(http.StatusOK, "账号信息未找到")
+		ctx.String(http.StatusOK, "账号信息未找到")
 		return
 	}
 	if err != nil {
-		context.String(http.StatusOK, "系统错误")
+		ctx.String(http.StatusOK, "系统错误")
 		return
 	}
-	context.JSON(http.StatusOK, userFind)
+	ctx.JSON(http.StatusOK, userFind)
 
 }
 

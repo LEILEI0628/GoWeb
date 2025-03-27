@@ -34,12 +34,12 @@ func (ur UserRouters) signInRouter(userGroup *gin.RouterGroup) {
 }
 
 func (ur UserRouters) signOutRouter(userGroup *gin.RouterGroup) {
-	userGroup.GET("/logout", ur.handler.SignOut)
+	userGroup.GET("/logout", ur.handler.SignOutByJWT)
 
 }
 
 func (ur UserRouters) editRouter(userGroup *gin.RouterGroup) {
-	userGroup.POST("/edit", ur.handler.Edit)
+	userGroup.POST("/edit", ur.handler.EditByJWT)
 
 }
 

@@ -1,7 +1,7 @@
 type Profile = {
     Email: string
     Phone: string
-    Nickname: string
+    NickName: string
     Birthday: string
     AboutMe:  string
 }

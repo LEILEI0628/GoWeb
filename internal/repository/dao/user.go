@@ -2,8 +2,8 @@ package dao
 
 import (
 	"context"
-	"database/sql"
 	"errors"
+	"github.com/LEILEI0628/GoWeb/internal/repository/dao/po"
 	"github.com/go-sql-driver/mysql"
 	"gorm.io/gorm"
 	"time"
@@ -15,31 +15,20 @@ var (
 )
 
 type UserDAO interface {
-	Insert(ctx context.Context, user User) error
-	FindByEmail(ctx context.Context, email string) (User, error)
-	FindById(ctx context.Context, id int64) (User, error)
+	Insert(ctx context.Context, user po.User) error
+	FindByEmail(ctx context.Context, email string) (po.User, error)
+	FindById(ctx context.Context, id int64) (po.User, error)
+	UpdateById(ctx context.Context, id int64, user po.User) (po.User, error)
 }
 type GORMUserDAO struct {
 	db *gorm.DB
 }
 
-func NewGORMUserDAO(db *gorm.DB) *GORMUserDAO {
+func NewGORMUserDAO(db *gorm.DB) UserDAO {
 	return &GORMUserDAO{db: db}
 }
 
-// User dao.User直接对应数据库表
-// 其他叫法：entity，model，PO（persistent object）
-type User struct {
-	Id         int64          `gorm:"primaryKey,auto_Increment"` // 自增主键
-	Email      sql.NullString `gorm:"unique"`                    // 唯一索引允许有多个空值（null），但是不能有多个空字符串（""）
-	Phone      sql.NullString `gorm:"unique"`                    // *string也可以，但是要解引用，判空
-	Password   string
-	CreateTime int64 // 创建时间：毫秒数
-	UpdateTime int64 // 修改时间：毫秒数
-
-}
-
-func (dao *GORMUserDAO) Insert(ctx context.Context, user User) error {
+func (dao *GORMUserDAO) Insert(ctx context.Context, user po.User) error {
 	now := time.Now().UnixMilli() // 当前时间的毫秒数
 	user.CreateTime = now
 	user.UpdateTime = now
@@ -57,17 +46,29 @@ func (dao *GORMUserDAO) Insert(ctx context.Context, user User) error {
 	return err
 }
 
-func (dao *GORMUserDAO) FindByEmail(ctx context.Context, email string) (User, error) {
-	var user User
+func (dao *GORMUserDAO) FindByEmail(ctx context.Context, email string) (po.User, error) {
+	var user po.User
 	// SELECT * FROM `users` WHERE `email`=?
 	err := dao.db.WithContext(ctx).Where("email=?", email).First(&user).Error
 	//err := dao.db.WithContext(context).First(&user, "email=?", email).Error // 等价写法
 	return user, err // 无需判断直接返回（已更改err名称）
 }
 
-func (dao *GORMUserDAO) FindById(ctx context.Context, id int64) (User, error) {
-	var user User
+func (dao *GORMUserDAO) FindById(ctx context.Context, id int64) (po.User, error) {
+	var user po.User
 	// SELECT * FROM `users` WHERE `id`=?
 	err := dao.db.WithContext(ctx).Where("id=?", id).First(&user).Error
 	return user, err // 无需判断直接返回（已更改err名称）
+}
+
+func (dao *GORMUserDAO) UpdateById(ctx context.Context, id int64, user po.User) (po.User, error) {
+	now := time.Now().UnixMilli()
+	user.UpdateTime = now
+	err := dao.db.WithContext(ctx).Debug().
+		Model(&user).Where("id=?", id).
+		Updates(user).Error
+	if err == nil {
+		err = dao.db.WithContext(ctx).Where("id=?", id).First(&user).Error
+	}
+	return user, err
 }

@@ -4,7 +4,7 @@ import { Button } from 'antd';
 import axios from "@/axios/axios";
 
 function Page() {
-    let p: Profile = {Email: "", Phone: "", Nickname: "", Birthday:"", AboutMe: ""}
+    let p: Profile = {Email: "", Phone: "", NickName: "", Birthday:"", AboutMe: ""}
     const [data, setData] = useState<Profile>(p)
     const [isLoading, setLoading] = useState(false)
 
@@ -27,7 +27,7 @@ function Page() {
             title="个人信息"
         >
             <ProDescriptions.Item label="昵称" valueType="text">
-                {data.Nickname}
+                {data.NickName}
             </ProDescriptions.Item>
             <ProDescriptions.Item
                 // span={1}

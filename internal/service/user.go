@@ -16,6 +16,7 @@ type UserServiceInterface interface {
 	SignUp(ctx context.Context, user domain.User) error
 	SignIn(ctx context.Context, user domain.User) (domain.User, error)
 	Profile(ctx context.Context, id int64) (domain.UserProfile, error)
+	Edit(ctx context.Context, id int64, user domain.UserProfile) error
 }
 type UserService struct {
 	userRepo repository.UserRepository
@@ -51,10 +52,15 @@ func (service *UserService) SignIn(ctx context.Context, user domain.User) (domai
 	return userFind, nil
 }
 
+func (service *UserService) Edit(ctx context.Context, id int64, profile domain.UserProfile) error {
+	return service.userRepo.UpdateById(ctx, id, profile)
+}
+
 func (service *UserService) Profile(ctx context.Context, id int64) (domain.UserProfile, error) {
 	user, err := service.userRepo.FindById(ctx, id)
 	if err != nil {
 		return domain.UserProfile{}, err
 	}
-	return domain.UserProfile{Email: user.Email, Phone: user.Phone}, err
+	return domain.UserProfile{Email: user.Email, Phone: user.Phone, NickName: user.NickName,
+		Birthday: user.Birthday, AboutMe: user.AboutMe}, err
 }

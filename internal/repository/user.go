@@ -8,6 +8,7 @@ import (
 	"github.com/LEILEI0628/GoWeb/internal/domain"
 	"github.com/LEILEI0628/GoWeb/internal/repository/cache"
 	"github.com/LEILEI0628/GoWeb/internal/repository/dao"
+	"github.com/LEILEI0628/GoWeb/internal/repository/dao/po"
 	"time"
 )
 
@@ -18,21 +19,22 @@ var ErrKeyNotExist = cachex.ErrKeyNotExist
 type UserRepository interface {
 	FindById(ctx context.Context, id int64) (domain.User, error)
 	Create(ctx context.Context, user domain.User) error
+	UpdateById(ctx context.Context, id int64, profile domain.UserProfile) error
 	FindByEmail(ctx context.Context, email string) (domain.User, error)
 }
 type CacheUserRepository struct {
-	userDAO   dao.UserDAO
-	userCache cache.UserCache
+	dao   dao.UserDAO
+	cache cache.UserCache
 }
 
-func NewCacheUserRepository(dao *dao.GORMUserDAO, cache cache.UserCache) UserRepository {
-	return &CacheUserRepository{userDAO: dao, userCache: cache}
+func NewCacheUserRepository(dao dao.UserDAO, cache cache.UserCache) UserRepository {
+	return &CacheUserRepository{dao: dao, cache: cache}
 }
 
 func (repo *CacheUserRepository) FindById(ctx context.Context, id int64) (domain.User, error) {
 	// 从cache中寻找
 	// 获取用户缓存
-	uc, err := repo.userCache.Get(ctx, id)
+	uc, err := repo.cache.Get(ctx, id)
 	if err == nil {
 		// 从cache中找到数据
 		fmt.Println("Cache Find")
@@ -40,12 +42,12 @@ func (repo *CacheUserRepository) FindById(ctx context.Context, id int64) (domain
 	}
 	//if errors.Is(err, cachex.ErrKeyNotExist) { // 处理缓存未命中：从cache中没找到数据
 	// 设置用户缓存：从dao中寻找并写回cache
-	ue, err := repo.userDAO.FindById(ctx, id)
+	up, err := repo.dao.FindById(ctx, id)
 	if err != nil {
 		return domain.User{}, err
 	}
-	ud := repo.entityToDomain(ue)
-	err = repo.userCache.Set(ctx, ud.Id, ud)
+	ud := repo.entityToDomain(up)
+	err = repo.cache.Set(ctx, ud.Id, ud)
 	if err != nil {
 		fmt.Println("Cache Set Filed")
 		// 缓存Set失败（记录日志做监控即可，为了防止缓存崩溃的可能）
@@ -61,24 +63,64 @@ func (repo *CacheUserRepository) FindById(ctx context.Context, id int64) (domain
 }
 
 func (repo *CacheUserRepository) Create(ctx context.Context, user domain.User) error {
-	ue := repo.domainToEntity(user)
-	return repo.userDAO.Insert(ctx, ue)
+	up := repo.domainToEntity(user)
+	return repo.dao.Insert(ctx, up)
 
 	// TODO 操作缓存
 }
 
+func (repo *CacheUserRepository) UpdateById(ctx context.Context, id int64, profile domain.UserProfile) error {
+	up := po.User{
+		NickName: sql.NullString{String: profile.NickName, Valid: profile.NickName != ""},
+		Birthday: sql.NullString{String: profile.Birthday, Valid: profile.Birthday != ""},
+		AboutMe:  sql.NullString{String: profile.AboutMe, Valid: profile.AboutMe != ""},
+	}
+	// 更新数据库
+	up, err := repo.dao.UpdateById(ctx, id, up)
+	if err != nil {
+		return err
+	}
+	ud := repo.entityToDomain(up)
+	// 更新cache
+	_ = repo.cache.Delete(ctx, id) // 可能会存在键不存在错误（Set也可判断其他错误，故忽略）
+	err = repo.cache.Set(ctx, id, ud)
+	if err != nil {
+		fmt.Println("Cache Set Filed")
+		// 缓存Set失败（记录日志做监控即可，为了防止缓存崩溃的可能）
+		// TODO 记录日志
+	} else {
+		fmt.Println("Cache Update Success")
+	}
+	return nil
+}
+
 func (repo *CacheUserRepository) FindByEmail(ctx context.Context, email string) (domain.User, error) {
-	user, err := repo.userDAO.FindByEmail(ctx, email)
+	user, err := repo.dao.FindByEmail(ctx, email)
 	if err != nil {
 		return domain.User{}, err
 	}
 	return repo.entityToDomain(user), nil
 }
 
-func (repo *CacheUserRepository) domainToEntity(u domain.User) dao.User {
-	return dao.User{Id: u.Id, Email: sql.NullString{String: u.Email, Valid: u.Email != ""}, Phone: sql.NullString{String: u.Phone, Valid: u.Phone != ""}, Password: u.Password, CreateTime: u.CreateTime.UnixMilli()}
+func (repo *CacheUserRepository) domainToEntity(ud domain.User) po.User {
+	return po.User{Id: ud.Id,
+		Email:      sql.NullString{String: ud.Email, Valid: ud.Email != ""},
+		Phone:      sql.NullString{String: ud.Phone, Valid: ud.Phone != ""},
+		Password:   ud.Password,
+		NickName:   sql.NullString{String: ud.NickName, Valid: ud.NickName != ""},
+		Birthday:   sql.NullString{String: ud.Birthday, Valid: ud.Birthday != ""},
+		AboutMe:    sql.NullString{String: ud.AboutMe, Valid: ud.AboutMe != ""},
+		CreateTime: ud.CreateTime.UnixMilli(),
+	}
 }
 
-func (repo *CacheUserRepository) entityToDomain(u dao.User) domain.User {
-	return domain.User{Id: u.Id, Email: u.Email.String, Phone: u.Phone.String, Password: u.Password, CreateTime: time.UnixMilli(u.CreateTime)}
+func (repo *CacheUserRepository) entityToDomain(up po.User) domain.User {
+	return domain.User{Id: up.Id,
+		Email:      up.Email.String,
+		Phone:      up.Phone.String,
+		Password:   up.Password,
+		NickName:   up.NickName.String,
+		Birthday:   up.Birthday.String,
+		AboutMe:    up.AboutMe.String,
+		CreateTime: time.UnixMilli(up.CreateTime)}
 }

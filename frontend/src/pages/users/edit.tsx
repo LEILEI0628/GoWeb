@@ -8,7 +8,10 @@ const { TextArea } = Input;
 
 const onFinish = (values: any) => {
     if (values.birthday) {
-        values.birthday = moment(values.birthday).format("YYYY-MM-DD")
+        alert(values.birthday)
+        // values.birthday = moment(values.birthday).format("YYYY-MM-DD")
+        values.birthday=values.birthday.format('YYYY-MM-DD') // 使用 moment 的 format 方法
+        alert(values.birthday)
     }
     axios.post("/users/edit", values)
         .then((res) => {
@@ -54,7 +57,7 @@ function EditForm() {
         style={{ maxWidth: 600 }}
         initialValues={{
             birthday: moment(data.Birthday, 'YYYY-MM-DD'),
-            nickname: data.Nickname,
+            nickname: data.NickName,
             aboutMe: data.AboutMe
         }}
         onFinish={onFinish}
