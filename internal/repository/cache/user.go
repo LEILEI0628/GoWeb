@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"context"
 	"fmt"
 	cachex "github.com/LEILEI0628/GinPro/middleware/cache"
 	"github.com/LEILEI0628/GoWeb/internal/domain"
@@ -8,9 +9,15 @@ import (
 	"time"
 )
 
-type UserCache = cachex.RedisCache[domain.User, int64]
+type UserCache interface {
+	Get(ctx context.Context, key int64) (domain.User, error)
+	Set(ctx context.Context, key int64, value domain.User) error
+	Delete(ctx context.Context, key int64) error
+}
 
-func NewUserCache(client redis.Cmdable) *UserCache {
+type RedisUserCache = cachex.RedisCache[domain.User, int64]
+
+func NewRedisUserCache(client redis.Cmdable) UserCache {
 	expiration := time.Minute * 15
 	// 用户缓存初始化方法
 	userKeyFunc := func(id int64) string {

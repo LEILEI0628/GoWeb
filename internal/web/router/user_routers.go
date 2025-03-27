@@ -7,43 +7,43 @@ import (
 
 // UserRouters User相关的路由
 type UserRouters struct {
-	userHandler *handler.UserHandler
+	handler *handler.UserHandler
 }
 
-func NewUserRouters(userHandler *handler.UserHandler) *UserRouters {
-	return &UserRouters{userHandler: userHandler}
+func NewUserRouters(handler *handler.UserHandler) *UserRouters {
+	return &UserRouters{handler: handler}
 }
 
-func (userRouters UserRouters) RegisterRouters(server *gin.Engine) {
+func (ur UserRouters) RegisterRouters(server *gin.Engine) {
 	// 分组路由
 	userGroup := server.Group("/users")
-	userRouters.signUpRouter(userGroup)
-	userRouters.signInRouter(userGroup)
-	userRouters.signOutRouter(userGroup)
-	userRouters.profileRouter(userGroup)
-	userRouters.editRouter(userGroup)
+	ur.signUpRouter(userGroup)
+	ur.signInRouter(userGroup)
+	ur.signOutRouter(userGroup)
+	ur.profileRouter(userGroup)
+	ur.editRouter(userGroup)
 
 }
 
-func (userRouters UserRouters) signUpRouter(userGroup *gin.RouterGroup) {
-	userGroup.POST("/signup", userRouters.userHandler.SignUp)
+func (ur UserRouters) signUpRouter(userGroup *gin.RouterGroup) {
+	userGroup.POST("/signup", ur.handler.SignUp)
 }
 
-func (userRouters UserRouters) signInRouter(userGroup *gin.RouterGroup) {
-	userGroup.POST("/login", userRouters.userHandler.SignInByJWT)
+func (ur UserRouters) signInRouter(userGroup *gin.RouterGroup) {
+	userGroup.POST("/login", ur.handler.SignInByJWT)
 }
 
-func (userRouters UserRouters) signOutRouter(userGroup *gin.RouterGroup) {
-	userGroup.GET("/logout", userRouters.userHandler.SignOut)
-
-}
-
-func (userRouters UserRouters) editRouter(userGroup *gin.RouterGroup) {
-	userGroup.POST("/edit", userRouters.userHandler.Edit)
+func (ur UserRouters) signOutRouter(userGroup *gin.RouterGroup) {
+	userGroup.GET("/logout", ur.handler.SignOut)
 
 }
 
-func (userRouters UserRouters) profileRouter(userGroup *gin.RouterGroup) {
-	userGroup.GET("/profile", userRouters.userHandler.ProfileByJWT)
+func (ur UserRouters) editRouter(userGroup *gin.RouterGroup) {
+	userGroup.POST("/edit", ur.handler.Edit)
+
+}
+
+func (ur UserRouters) profileRouter(userGroup *gin.RouterGroup) {
+	userGroup.GET("/profile", ur.handler.ProfileByJWT)
 
 }

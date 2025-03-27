@@ -18,7 +18,7 @@ func NewRegisterRouters(userRouters *router.UserRouters) *RegisterRouters { // å
 	return &RegisterRouters{routers: routers}
 }
 
-func (rr *RegisterRouters) Register(server *gin.Engine) {
+func (rr *RegisterRouters) RegisterAll(server *gin.Engine) {
 	for _, v := range rr.routers {
 		v.RegisterRouters(server)
 	}

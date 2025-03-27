@@ -12,26 +12,31 @@ var ErrUserEmailDuplicated = repository.ErrUserEmailDuplicated
 var ErrInvalidEmailOrPassword = errors.New("invalid email or password")
 var ErrUserNotFound = repository.ErrUserNotFound
 
+type UserServiceInterface interface {
+	SignUp(ctx context.Context, user domain.User) error
+	SignIn(ctx context.Context, user domain.User) (domain.User, error)
+	Profile(ctx context.Context, id int64) (domain.UserProfile, error)
+}
 type UserService struct {
-	userRepository *repository.UserRepository
+	userRepo repository.UserRepository
 }
 
-func NewUserService(userRepo *repository.UserRepository) *UserService {
-	return &UserService{userRepository: userRepo}
+func NewUserService(userRepo repository.UserRepository) UserServiceInterface {
+	return &UserService{userRepo: userRepo}
 }
 
-func (userService *UserService) SignUp(context context.Context, user domain.User) error {
+func (service *UserService) SignUp(ctx context.Context, user domain.User) error {
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 	user.Password = string(hash)
-	return userService.userRepository.Create(context, user)
+	return service.userRepo.Create(ctx, user)
 }
 
-func (userService *UserService) SignIn(context context.Context, user domain.User) (domain.User, error) {
+func (service *UserService) SignIn(ctx context.Context, user domain.User) (domain.User, error) {
 	// 通过邮箱查找用户
-	userFind, err := userService.userRepository.FindByEmail(context, user.Email)
+	userFind, err := service.userRepo.FindByEmail(ctx, user.Email)
 	if errors.Is(err, repository.ErrUserNotFound) {
 		return domain.User{}, ErrInvalidEmailOrPassword
 	}
@@ -46,8 +51,8 @@ func (userService *UserService) SignIn(context context.Context, user domain.User
 	return userFind, nil
 }
 
-func (userService *UserService) Profile(context context.Context, id int64) (domain.UserProfile, error) {
-	user, err := userService.userRepository.FindById(context, id)
+func (service *UserService) Profile(ctx context.Context, id int64) (domain.UserProfile, error) {
+	user, err := service.userRepo.FindById(ctx, id)
 	if err != nil {
 		return domain.UserProfile{}, err
 	}

@@ -8,6 +8,6 @@ import (
 func InitGin(middleware []gin.HandlerFunc, routers *web.RegisterRouters) *gin.Engine {
 	server := gin.Default()
 	server.Use(middleware...)
-	routers.Register(server)
+	routers.RegisterAll(server)
 	return server
 }

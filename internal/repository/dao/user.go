@@ -14,12 +14,17 @@ var (
 	ErrUserNotFound        = gorm.ErrRecordNotFound // 别名，返回的gorm.ErrRecordNotFound err会被改写成ErrUserNotFound
 )
 
-type UserDAO struct {
+type UserDAO interface {
+	Insert(ctx context.Context, user User) error
+	FindByEmail(ctx context.Context, email string) (User, error)
+	FindById(ctx context.Context, id int64) (User, error)
+}
+type GORMUserDAO struct {
 	db *gorm.DB
 }
 
-func NewUserDAO(db *gorm.DB) *UserDAO {
-	return &UserDAO{db: db}
+func NewGORMUserDAO(db *gorm.DB) *GORMUserDAO {
+	return &GORMUserDAO{db: db}
 }
 
 // User dao.User直接对应数据库表
@@ -34,11 +39,11 @@ type User struct {
 
 }
 
-func (userDAO *UserDAO) Insert(context context.Context, user User) error {
+func (dao *GORMUserDAO) Insert(ctx context.Context, user User) error {
 	now := time.Now().UnixMilli() // 当前时间的毫秒数
 	user.CreateTime = now
 	user.UpdateTime = now
-	err := userDAO.db.WithContext(context).Create(&user).Error
+	err := dao.db.WithContext(ctx).Create(&user).Error
 	// 关于邮箱冲突问题：使用先查操作（查询时都返回查询邮箱不存在）会导致后插入的用户操作失败
 	// 尝试锁住（间隙锁）：SELECT * FROM users WHERE email=... FOR UPDATE（存在并发问题）
 	// 冲突发生概率不大时可以不用分布式锁
@@ -52,17 +57,17 @@ func (userDAO *UserDAO) Insert(context context.Context, user User) error {
 	return err
 }
 
-func (userDAO *UserDAO) FindByEmail(context context.Context, email string) (User, error) {
+func (dao *GORMUserDAO) FindByEmail(ctx context.Context, email string) (User, error) {
 	var user User
 	// SELECT * FROM `users` WHERE `email`=?
-	err := userDAO.db.WithContext(context).Where("email=?", email).First(&user).Error
-	//err := userDAO.db.WithContext(context).First(&user, "email=?", email).Error // 等价写法
+	err := dao.db.WithContext(ctx).Where("email=?", email).First(&user).Error
+	//err := dao.db.WithContext(context).First(&user, "email=?", email).Error // 等价写法
 	return user, err // 无需判断直接返回（已更改err名称）
 }
 
-func (userDAO *UserDAO) FindById(context context.Context, id int64) (User, error) {
+func (dao *GORMUserDAO) FindById(ctx context.Context, id int64) (User, error) {
 	var user User
 	// SELECT * FROM `users` WHERE `id`=?
-	err := userDAO.db.WithContext(context).Where("id=?", id).First(&user).Error
+	err := dao.db.WithContext(ctx).Where("id=?", id).First(&user).Error
 	return user, err // 无需判断直接返回（已更改err名称）
 }
