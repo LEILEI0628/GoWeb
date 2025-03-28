@@ -35,6 +35,7 @@ func InitWebServer() *gin.Engine {
 
 		// 初始化Routers、中间件、server
 		web.NewRegisterRouters,
+		ioc.InitLimiter,
 		ioc.InitMiddleware,
 		ioc.InitGin,
 	)
