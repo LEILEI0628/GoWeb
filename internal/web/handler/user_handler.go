@@ -165,7 +165,11 @@ func (handler *UserHandler) EditByJWT(ctx *gin.Context) {
 	if err := ctx.Bind(&userReq); err != nil {
 		return
 	}
-
+	_, err := time.Parse(time.DateOnly, userReq.Birthday)
+	if err != nil {
+		ctx.String(http.StatusOK, "生日格式错误")
+		return
+	}
 	c, _ := ctx.Get("claims")
 	claims, ok := c.(*jwtx.UserClaims)
 	if !ok {
@@ -174,7 +178,7 @@ func (handler *UserHandler) EditByJWT(ctx *gin.Context) {
 	}
 	UID := claims.UID
 
-	err := handler.service.Edit(ctx.Request.Context(), UID, userReq)
+	err = handler.service.Edit(ctx.Request.Context(), UID, userReq)
 	if err != nil {
 		ctx.String(http.StatusOK, "系统错误")
 		return
