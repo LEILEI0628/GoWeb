@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Limiter(limiterParam limiter.Limiter) gin.HandlerFunc {
+func GlobalLimiter(limiterParam limiter.Limiter) gin.HandlerFunc {
 	// 构造限流中间件
 	return limiter.NewBuilder(limiterParam).
 		Prefix("ip-limiter").

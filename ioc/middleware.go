@@ -10,6 +10,6 @@ func InitMiddleware(limiterParam limiter.Limiter) []gin.HandlerFunc {
 	return []gin.HandlerFunc{
 		middleware.ResolveCORS(), // 解决跨域问题
 		middleware.JWT(),
-		middleware.Limiter(limiterParam),
+		middleware.GlobalLimiter(limiterParam),
 	}
 }
