@@ -10,7 +10,6 @@ import (
 	"github.com/LEILEI0628/GoWeb/internal/repository"
 	"github.com/LEILEI0628/GoWeb/internal/repository/cache"
 	"github.com/LEILEI0628/GoWeb/internal/repository/dao"
-	"github.com/LEILEI0628/GoWeb/internal/service"
 	"github.com/LEILEI0628/GoWeb/internal/web"
 	"github.com/LEILEI0628/GoWeb/internal/web/handler"
 	"github.com/LEILEI0628/GoWeb/internal/web/router"
@@ -18,17 +17,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+import (
+	_ "github.com/spf13/viper/remote"
+)
+
 // Injectors from wire.go:
 
 func InitWebServer() *gin.Engine {
 	cmdable := ioc.InitRedis()
 	limiter := ioc.InitLimiter(cmdable)
-	v := ioc.InitMiddleware(limiter)
-	db := ioc.InitDB()
+	logger := ioc.InitGlobalLogger()
+	v := ioc.InitMiddleware(limiter, logger)
+	db := ioc.InitDB(logger)
 	userDAO := dao.NewGORMUserDAO(db)
 	userCache := cache.NewRedisUserCache(cmdable)
 	userRepository := repository.NewCacheUserRepository(userDAO, userCache)
-	userServiceInterface := service.NewUserService(userRepository)
+	userServiceInterface := ioc.InitUserService(userRepository)
 	userHandler := handler.NewUserHandler(userServiceInterface)
 	userRouters := router.NewUserRouters(userHandler)
 	registerRouters := web.NewRegisterRouters(userRouters)

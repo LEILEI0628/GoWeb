@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/LEILEI0628/GoWeb/internal/domain"
 	"github.com/LEILEI0628/GoWeb/internal/repository"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -20,10 +21,11 @@ type UserServiceInterface interface {
 }
 type UserService struct {
 	userRepo repository.UserRepository
+	logger   *zap.Logger // 预留了注入空间
 }
 
-func NewUserService(userRepo repository.UserRepository) UserServiceInterface {
-	return &UserService{userRepo: userRepo}
+func NewUserService(userRepo repository.UserRepository, logger *zap.Logger) UserServiceInterface {
+	return &UserService{userRepo: userRepo, logger: logger}
 }
 
 func (service *UserService) SignUp(ctx context.Context, user domain.User) error {

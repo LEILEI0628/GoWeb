@@ -3,12 +3,12 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"github.com/LEILEI0628/GinPro/middleware/cache"
 	"github.com/LEILEI0628/GoWeb/internal/domain"
 	"github.com/LEILEI0628/GoWeb/internal/repository/cache"
 	"github.com/LEILEI0628/GoWeb/internal/repository/dao"
 	"github.com/LEILEI0628/GoWeb/internal/repository/dao/po"
+	"go.uber.org/zap"
 	"time"
 )
 
@@ -37,7 +37,7 @@ func (repo *CacheUserRepository) FindById(ctx context.Context, id int64) (domain
 	uc, err := repo.cache.Get(ctx, id)
 	if err == nil {
 		// 从cache中找到数据
-		fmt.Println("Cache Find")
+		zap.L().Debug("Cache Find")
 		return uc, err
 	}
 	//if errors.Is(err, cachex.ErrKeyNotExist) { // 处理缓存未命中：从cache中没找到数据
@@ -49,11 +49,10 @@ func (repo *CacheUserRepository) FindById(ctx context.Context, id int64) (domain
 	ud := repo.entityToDomain(up)
 	err = repo.cache.Set(ctx, ud.Id, ud)
 	if err != nil {
-		fmt.Println("Cache Set Filed")
 		// 缓存Set失败（记录日志做监控即可，为了防止缓存崩溃的可能）
-		// TODO 记录日志
+		zap.L().Error("Cache Set Filed", zap.Error(err))
 	}
-	fmt.Println("Cache Set Success")
+	zap.L().Debug("Cache Set Success")
 	return ud, err
 	//} // 注释掉此处if语句代表不管缓存发生什么问题都从数据库加载
 	// 当缓存发生除ErrKeyNotExist的错误时由两种解决方案：
@@ -64,9 +63,8 @@ func (repo *CacheUserRepository) FindById(ctx context.Context, id int64) (domain
 
 func (repo *CacheUserRepository) Create(ctx context.Context, user domain.User) error {
 	up := repo.domainToEntity(user)
-	return repo.dao.Insert(ctx, up)
-
 	// TODO 操作缓存
+	return repo.dao.Insert(ctx, up)
 }
 
 func (repo *CacheUserRepository) UpdateById(ctx context.Context, id int64, profile domain.UserProfile) error {
@@ -85,11 +83,10 @@ func (repo *CacheUserRepository) UpdateById(ctx context.Context, id int64, profi
 	_ = repo.cache.Delete(ctx, id) // 可能会存在键不存在错误（Set也可判断其他错误，故忽略）
 	err = repo.cache.Set(ctx, id, ud)
 	if err != nil {
-		fmt.Println("Cache Set Filed")
 		// 缓存Set失败（记录日志做监控即可，为了防止缓存崩溃的可能）
-		// TODO 记录日志
+		zap.L().Error("Cache Set Filed", zap.Error(err))
 	} else {
-		fmt.Println("Cache Update Success")
+		zap.L().Debug("Cache Update Success")
 	}
 	return nil
 }

@@ -7,16 +7,32 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	_ "github.com/spf13/viper/remote"
+	"go.uber.org/zap"
 )
 
 // 编译命令：GOOS=linux GOARCH=arm go build -o goweb .
 func main() {
 	initViper()
+	initLogger()
 	server := InitWebServer()
 	//server.GET("/hello", func(context *gin.Context) {
 	//	context.String(http.StatusOK, "hello world")
 	//})
 	server.Run(":8080")
+}
+
+func initLogger() {
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		panic(err)
+	}
+	// 不要在日志中打印敏感信息（用户个人信息）
+	// msg中应当包含定位信息（确定错误出错的位置）
+	// 含糊的日志尽量少使用（如：系统异常）
+	zap.S().Debug("启动日志服务（Replace前）") // 不会打印出来
+	logger.Debug("使用Logger直接打印")
+	zap.ReplaceGlobals(logger)
+	zap.S().Debug("启动日志服务")
 }
 
 func initViper() {

@@ -10,6 +10,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"go.uber.org/zap"
 	"net/http"
 	"time"
 )
@@ -65,7 +66,8 @@ func (handler *UserHandler) SignUp(ctx *gin.Context) {
 	}
 
 	if err != nil {
-		// TODO 记录日志
+		// 不要在日志中打印敏感信息
+		zap.L().Error("插入用户失败", zap.Error(err))
 		ctx.String(http.StatusOK, "系统错误")
 		return
 	}
@@ -218,7 +220,7 @@ func (handler *UserHandler) checkMessage(ctx *gin.Context, email string, passwor
 	if err != nil {
 		// 此处的err是正则表达式错误（使用regexp2时只有超时才会出现err）
 		// 不要把后端错误信息（err.Error()）传到前端！
-		// TODO 记录日志
+		zap.L().Error("正则表达式错误", zap.Error(err))
 		ctx.String(http.StatusOK, "系统错误") // 可以直观的看到请求是否到达服务器
 		//context.String(http.StatusInternalServerError, "系统错误") // RESTful风格更符合http规范
 		return err
@@ -230,14 +232,14 @@ func (handler *UserHandler) checkMessage(ctx *gin.Context, email string, passwor
 	}
 
 	if password != confirmPassword {
-		// TODO 记录日志
+		zap.L().Warn("password与confirmPassword不一致") // 可能为攻击行为
 		ctx.String(http.StatusOK, "两次输入的密码不一致")
 		return errors.New("两次输入的密码不一致")
 	}
 
 	ok, err = handler.passwordExp.MatchString(password)
 	if err != nil {
-		// TODO 记录日志
+		zap.L().Error("正则表达式处理错误", zap.Error(err))
 		ctx.String(http.StatusOK, "系统错误")
 		return err
 	}

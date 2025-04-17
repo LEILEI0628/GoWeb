@@ -6,7 +6,6 @@ import (
 	"github.com/LEILEI0628/GoWeb/internal/repository"
 	"github.com/LEILEI0628/GoWeb/internal/repository/cache"
 	"github.com/LEILEI0628/GoWeb/internal/repository/dao"
-	"github.com/LEILEI0628/GoWeb/internal/service"
 	"github.com/LEILEI0628/GoWeb/internal/web"
 	"github.com/LEILEI0628/GoWeb/internal/web/handler"
 	"github.com/LEILEI0628/GoWeb/internal/web/router"
@@ -27,7 +26,7 @@ func InitWebServer() *gin.Engine {
 		// 初始化Repository
 		repository.NewCacheUserRepository,
 		// 初始化Service
-		service.NewUserService,
+		ioc.InitUserService,
 		// 初始化Handler
 		handler.NewUserHandler,
 		// 初始化Routers
@@ -36,6 +35,7 @@ func InitWebServer() *gin.Engine {
 		// 初始化Routers、中间件、server
 		web.NewRegisterRouters,
 		ioc.InitLimiter,
+		ioc.InitGlobalLogger,
 		ioc.InitMiddleware,
 		ioc.InitGin,
 	)
