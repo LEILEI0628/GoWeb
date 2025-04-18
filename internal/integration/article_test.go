@@ -135,6 +135,49 @@ func (s *ArticleTestSuite) TestEdit() {
 				Msg:  "OK",
 			},
 		},
+		{
+			name: "修改别的创作者的帖子",
+			before: func(t *testing.T) {
+				// 提前准备数据
+				err := s.db.Create(po.Article{
+					Id:      3,
+					Title:   "我的标题",
+					Content: "我的内容",
+					// 测试模拟的用户 ID 是123，这里是 789
+					// 意味着是123在修改别人的数据
+					AuthorId: 789,
+					// 跟时间有关的测试，尽量不要用 time.Now()
+					// 因为 time.Now() 每次运行都不同，很难断言
+					CreateTime: 123,
+					UpdateTime: 234,
+				}).Error
+				assert.NoError(t, err)
+			},
+			after: func(t *testing.T) {
+				// 验证数据库
+				var art po.Article
+				err := s.db.Where("id=?", 3).First(&art).Error
+				assert.NoError(t, err)
+				assert.Equal(t, po.Article{
+					Id:         3,
+					Title:      "我的标题",
+					Content:    "我的内容",
+					CreateTime: 123,
+					UpdateTime: 234,
+					AuthorId:   789,
+				}, art)
+			},
+			art: Article{
+				Id:      3,
+				Title:   "新的标题",
+				Content: "新的内容",
+			},
+			wantCode: http.StatusOK,
+			wantRes: Result[int64]{
+				Code: 5,
+				Msg:  "系统错误",
+			},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
