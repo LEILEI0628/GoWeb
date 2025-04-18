@@ -1,4 +1,4 @@
-package web
+package handler
 
 type Result struct {
 	// 业务状态码

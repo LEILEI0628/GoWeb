@@ -15,7 +15,7 @@ var db *gorm.DB
 // InitTestDB 测试的话，不用控制并发。等遇到了并发问题再说
 func InitTestDB() *gorm.DB {
 	if db == nil {
-		dsn := "root:root@tcp(localhost:13306)/GoWeb"
+		dsn := "root:20010628@tcp(localhost:13306)/goweb"
 		sqlDB, err := sql.Open("mysql", dsn)
 		if err != nil {
 			panic(err)
@@ -33,7 +33,7 @@ func InitTestDB() *gorm.DB {
 		if err != nil {
 			panic(err)
 		}
-		err = dao.InitUserTable(db)
+		err = dao.InitTable(db)
 		if err != nil {
 			panic(err)
 		}

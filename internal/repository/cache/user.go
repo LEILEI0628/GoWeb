@@ -17,7 +17,7 @@ type UserCache interface {
 
 type RedisUserCache = cachex.RedisCache[domain.User, int64]
 
-func NewRedisUserCache(client redis.Cmdable) UserCache {
+func NewUserCache(client redis.Cmdable) UserCache {
 	expiration := time.Minute * 15
 	// 用户缓存初始化方法
 	userKeyFunc := func(id int64) string {

@@ -10,6 +10,7 @@ import (
 	"github.com/LEILEI0628/GoWeb/internal/repository"
 	"github.com/LEILEI0628/GoWeb/internal/repository/cache"
 	"github.com/LEILEI0628/GoWeb/internal/repository/dao"
+	"github.com/LEILEI0628/GoWeb/internal/service"
 	"github.com/LEILEI0628/GoWeb/internal/web"
 	"github.com/LEILEI0628/GoWeb/internal/web/handler"
 	"github.com/LEILEI0628/GoWeb/internal/web/router"
@@ -29,13 +30,16 @@ func InitWebServer() *gin.Engine {
 	logger := ioc.InitGlobalLogger()
 	v := ioc.InitMiddleware(limiter, logger)
 	db := ioc.InitDB(logger)
-	userDAO := dao.NewGORMUserDAO(db)
-	userCache := cache.NewRedisUserCache(cmdable)
-	userRepository := repository.NewCacheUserRepository(userDAO, userCache)
+	userDAO := dao.NewUserDAO(db)
+	userCache := cache.NewUserCache(cmdable)
+	userRepository := repository.NewUserRepository(userDAO, userCache)
 	userServiceInterface := ioc.InitUserService(userRepository)
 	userHandler := handler.NewUserHandler(userServiceInterface)
 	userRouters := router.NewUserRouters(userHandler)
-	articleHandler := handler.NewArticleHandler()
+	articleDAO := dao.NewArticleDAO(db)
+	articleRepository := repository.NewArticleRepository(articleDAO)
+	articleService := service.NewArticleService(articleRepository)
+	articleHandler := handler.NewArticleHandler(articleService, logger)
 	articleRouters := router.NewArticleRouters(articleHandler)
 	registerRouters := web.NewRegisterRouters(userRouters, articleRouters)
 	engine := ioc.InitGin(v, registerRouters)

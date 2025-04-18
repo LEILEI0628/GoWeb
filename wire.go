@@ -6,6 +6,7 @@ import (
 	"github.com/LEILEI0628/GoWeb/internal/repository"
 	"github.com/LEILEI0628/GoWeb/internal/repository/cache"
 	"github.com/LEILEI0628/GoWeb/internal/repository/dao"
+	"github.com/LEILEI0628/GoWeb/internal/service"
 	"github.com/LEILEI0628/GoWeb/internal/web"
 	"github.com/LEILEI0628/GoWeb/internal/web/handler"
 	"github.com/LEILEI0628/GoWeb/internal/web/router"
@@ -20,13 +21,16 @@ func InitWebServer() *gin.Engine {
 		ioc.InitDB, ioc.InitRedis,
 
 		// 初始化DAO
-		dao.NewGORMUserDAO,
+		dao.NewUserDAO,
+		dao.NewArticleDAO,
 		// 初始化Cache
-		cache.NewRedisUserCache,
+		cache.NewUserCache,
 		// 初始化Repository
-		repository.NewCacheUserRepository,
+		repository.NewUserRepository,
+		repository.NewArticleRepository,
 		// 初始化Service
 		ioc.InitUserService,
+		service.NewArticleService,
 		// 初始化Handler
 		handler.NewUserHandler,
 		handler.NewArticleHandler,

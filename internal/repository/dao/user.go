@@ -24,7 +24,7 @@ type GORMUserDAO struct {
 	db *gorm.DB
 }
 
-func NewGORMUserDAO(db *gorm.DB) UserDAO {
+func NewUserDAO(db *gorm.DB) UserDAO {
 	return &GORMUserDAO{db: db}
 }
 
@@ -66,9 +66,6 @@ func (dao *GORMUserDAO) UpdateById(ctx context.Context, id int64, user po.User) 
 	user.UpdateTime = now
 	err := dao.db.WithContext(ctx).Debug().
 		Model(&user).Where("id=?", id).
-		Updates(user).Error
-	if err == nil {
-		err = dao.db.WithContext(ctx).Where("id=?", id).First(&user).Error
-	}
+		Updates(&user).Error
 	return user, err
 }
