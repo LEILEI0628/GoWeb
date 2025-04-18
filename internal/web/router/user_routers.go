@@ -5,7 +5,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// UserRouters User相关的路由
+// UserRouters User相关路由
+var _ Routers = (*UserRouters)(nil) // 确保UserRouters实现了Routers接口
 type UserRouters struct {
 	handler *handler.UserHandler
 }

@@ -29,8 +29,10 @@ func InitWebServer() *gin.Engine {
 		ioc.InitUserService,
 		// 初始化Handler
 		handler.NewUserHandler,
+		handler.NewArticleHandler,
 		// 初始化Routers
 		router.NewUserRouters,
+		router.NewArticleRouters,
 
 		// 初始化Routers、中间件、server
 		web.NewRegisterRouters,

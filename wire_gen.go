@@ -35,7 +35,9 @@ func InitWebServer() *gin.Engine {
 	userServiceInterface := ioc.InitUserService(userRepository)
 	userHandler := handler.NewUserHandler(userServiceInterface)
 	userRouters := router.NewUserRouters(userHandler)
-	registerRouters := web.NewRegisterRouters(userRouters)
+	articleHandler := handler.NewArticleHandler()
+	articleRouters := router.NewArticleRouters(articleHandler)
+	registerRouters := web.NewRegisterRouters(userRouters, articleRouters)
 	engine := ioc.InitGin(v, registerRouters)
 	return engine
 }
