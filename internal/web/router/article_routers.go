@@ -18,8 +18,13 @@ func NewArticleRouters(handler *handler.ArticleHandler) *ArticleRouters {
 func (ar ArticleRouters) RegisterRouters(server *gin.Engine) {
 	group := server.Group("/articles")
 	ar.edit(group)
+	ar.publish(group)
 }
 
 func (ar ArticleRouters) edit(group *gin.RouterGroup) {
 	group.POST("edit", ar.handler.Edit)
+}
+
+func (ar ArticleRouters) publish(group *gin.RouterGroup) {
+	group.POST("publish", ar.handler.Publish)
 }

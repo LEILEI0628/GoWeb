@@ -3,7 +3,7 @@ module github.com/LEILEI0628/GoWeb
 go 1.24
 
 require (
-	github.com/LEILEI0628/GinPro v0.6.2
+	github.com/LEILEI0628/GinPro v0.7.0
 	github.com/dlclark/regexp2 v1.11.5
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/gin-contrib/cors v1.7.4
@@ -17,6 +17,7 @@ require (
 	github.com/spf13/viper v1.20.1
 	github.com/spf13/viper/remote v1.20.1
 	github.com/stretchr/testify v1.10.0
+	go.uber.org/mock v0.5.1
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.36.0
 	gorm.io/driver/mysql v1.5.7

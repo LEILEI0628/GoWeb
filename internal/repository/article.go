@@ -8,6 +8,8 @@ import (
 )
 
 type ArticleRepository interface {
+	// 可以将ArticleRepository拆分为ArticleAuthorRepository和ArticleReaderRepository
+
 	Create(ctx context.Context, article domain.Article) (int64, error)
 	Update(ctx context.Context, article domain.Article) error
 }

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	ginx "github.com/LEILEI0628/GinPro/GinX"
 	jwtx "github.com/LEILEI0628/GinPro/middleware/jwt"
 	loggerx "github.com/LEILEI0628/GinPro/middleware/logger"
 	"github.com/LEILEI0628/GoWeb/internal/domain"
@@ -10,21 +11,16 @@ import (
 )
 
 type ArticleHandler struct {
-	svc *service.ArticleService
+	svc service.ArticleServiceInterface
 	l   loggerx.Logger
 }
 
-func NewArticleHandler(svc *service.ArticleService, logger loggerx.Logger) *ArticleHandler {
+func NewArticleHandler(svc service.ArticleServiceInterface, logger loggerx.Logger) *ArticleHandler {
 	return &ArticleHandler{svc: svc, l: logger}
 }
 
 func (h *ArticleHandler) Edit(ctx *gin.Context) {
-	type Req struct {
-		Id      int64  `json:"id"`
-		Title   string `json:"title"`
-		Content string `json:"content"`
-	}
-	var req Req
+	var req ArticleReq
 	if err := ctx.Bind(&req); err != nil {
 		return
 	}
@@ -34,7 +30,7 @@ func (h *ArticleHandler) Edit(ctx *gin.Context) {
 	claims, ok := c.(*jwtx.UserClaims)
 	if !ok {
 		//ctx.AbortWithStatus(http.StatusUnauthorized)
-		ctx.JSON(http.StatusOK, Result{Code: 5, Msg: "系统错误"})
+		ctx.JSON(http.StatusOK, ginx.Result{Code: 5, Msg: "系统错误"})
 		h.l.Error("未发现用户的session信息")
 		return
 	}
@@ -44,9 +40,60 @@ func (h *ArticleHandler) Edit(ctx *gin.Context) {
 	id, err := h.svc.Save(ctx.Request.Context(), domain.Article{Id: req.Id, Title: req.Title, Content: req.Content,
 		Author: domain.Author{Id: UID}})
 	if err != nil {
-		ctx.JSON(http.StatusOK, Result{Code: 5, Msg: "系统错误"})
+		ctx.JSON(http.StatusOK, ginx.Result{Code: 5, Msg: "系统错误"})
 		h.l.Error("article保存失败", loggerx.Error(err))
 		return
 	}
-	ctx.JSON(http.StatusOK, Result{Msg: "OK", Data: id})
+	ctx.JSON(http.StatusOK, ginx.Result{Msg: "OK", Data: id})
+}
+
+func (h *ArticleHandler) Publish(ctx *gin.Context) {
+	var req ArticleReq
+	if err := ctx.Bind(&req); err != nil {
+		return
+	}
+	c := ctx.MustGet("claims")
+	claims, ok := c.(*jwtx.UserClaims)
+	if !ok {
+		// 你可以考虑监控住这里
+		//ctx.AbortWithStatus(http.StatusUnauthorized)
+		ctx.JSON(http.StatusOK, ginx.Result{
+			Code: 5,
+			Msg:  "系统错误",
+		})
+		h.l.Error("未发现用户的 session 信息")
+		return
+	}
+
+	id, err := h.svc.Publish(ctx, req.toDomain(claims.UID))
+	if err != nil {
+		ctx.JSON(http.StatusOK, ginx.Result{
+			Code: 5,
+			Msg:  "系统错误",
+		})
+		// 打日志？
+		h.l.Error("发表帖子失败", loggerx.Error(err))
+		return
+	}
+	ctx.JSON(http.StatusOK, ginx.Result{
+		Msg:  "OK",
+		Data: id,
+	})
+}
+
+type ArticleReq struct {
+	Id      int64  `json:"id"`
+	Title   string `json:"title"`
+	Content string `json:"content"`
+}
+
+func (req ArticleReq) toDomain(uid int64) domain.Article {
+	return domain.Article{
+		Id:      req.Id,
+		Title:   req.Title,
+		Content: req.Content,
+		Author: domain.Author{
+			Id: uid,
+		},
+	}
 }
