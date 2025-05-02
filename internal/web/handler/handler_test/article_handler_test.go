@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/LEILEI0628/GinPro/GinX"
 	jwtx "github.com/LEILEI0628/GinPro/middleware/jwt"
 	loggerx "github.com/LEILEI0628/GinPro/middleware/logger"
 	"github.com/LEILEI0628/GoWeb/internal/domain"
@@ -11,7 +12,6 @@ import (
 	svcmocks "github.com/LEILEI0628/GoWeb/internal/service/mocks"
 	"github.com/LEILEI0628/GoWeb/internal/web/handler"
 	"github.com/LEILEI0628/GoWeb/internal/web/router"
-	"github.com/LEILEI0628/GoWeb/pkg"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -30,7 +30,7 @@ func TestArticleHandler_Publish(t *testing.T) {
 		reqBody string
 
 		wantCode int
-		wantRes  pkg.Result
+		wantRes  ginx.Result
 	}{
 		{
 			name: "新建并发表",
@@ -52,7 +52,7 @@ func TestArticleHandler_Publish(t *testing.T) {
 }
 `,
 			wantCode: 200,
-			wantRes: pkg.Result{
+			wantRes: ginx.Result{
 				Data: float64(1),
 				Msg:  "OK",
 			},
@@ -77,7 +77,7 @@ func TestArticleHandler_Publish(t *testing.T) {
 }
 `,
 			wantCode: 200,
-			wantRes: pkg.Result{
+			wantRes: ginx.Result{
 				Code: 5,
 				Msg:  "系统错误",
 			},
@@ -109,7 +109,7 @@ func TestArticleHandler_Publish(t *testing.T) {
 			if resp.Code != 200 {
 				return
 			}
-			var webRes pkg.Result
+			var webRes ginx.Result
 			err = json.NewDecoder(resp.Body).Decode(&webRes)
 			require.NoError(t, err)
 			assert.Equal(t, tc.wantRes, webRes)
