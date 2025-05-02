@@ -4,6 +4,7 @@ import (
 	"context"
 	loggerx "github.com/LEILEI0628/GinPro/middleware/logger"
 	"github.com/LEILEI0628/GoWeb/internal/domain"
+	"github.com/LEILEI0628/GoWeb/internal/events/article"
 	"github.com/LEILEI0628/GoWeb/internal/repository/article"
 	"time"
 )
@@ -13,13 +14,17 @@ type ArticleServiceInterface interface {
 	Withdraw(ctx context.Context, art domain.Article) error
 	Publish(ctx context.Context, art domain.Article) (int64, error)
 	PublishV1(ctx context.Context, art domain.Article) (int64, error)
+	List(ctx context.Context, uid int64, offset int, limit int) ([]domain.Article, error)
+	GetById(ctx context.Context, id int64) (domain.Article, error)
+	GetPublishedById(ctx context.Context, id, uid int64) (domain.Article, error)
 }
 type ArticleService struct {
 	repo repository.ArticleRepository
 	// V1 依靠两个不同的 repository 来解决这种跨表，或者跨库的问题
-	author repository.ArticleAuthorRepository
-	reader repository.ArticleReaderRepository
-	l      loggerx.Logger
+	author   repository.ArticleAuthorRepository
+	reader   repository.ArticleReaderRepository
+	l        loggerx.Logger
+	producer events.Producer
 }
 
 func NewArticleService(repo repository.ArticleRepository) ArticleServiceInterface {
@@ -82,4 +87,32 @@ func (a *ArticleService) PublishV1(ctx context.Context, art domain.Article) (int
 		// 打 MQ
 	}
 	return id, err
+}
+func (svc *ArticleService) GetPublishedById(ctx context.Context, id, uid int64) (domain.Article, error) {
+	// 另一个选项，在这里组装 Author，调用 UserService
+	art, err := svc.repo.GetPublishedById(ctx, id)
+	if err == nil {
+		go func() {
+			er := svc.producer.ProduceReadEvent(
+				ctx,
+				events.ReadEvent{
+					// 即便你的消费者要用 art 的里面的数据，
+					// 让它去查询，你不要在 event 里面带
+					Uid: uid,
+					Aid: id,
+				})
+			if er == nil {
+				svc.l.Error("发送读者阅读事件失败")
+			}
+		}()
+	}
+	return art, err
+}
+
+func (a *ArticleService) GetById(ctx context.Context, id int64) (domain.Article, error) {
+	return a.repo.GetByID(ctx, id)
+}
+
+func (a *ArticleService) List(ctx context.Context, uid int64, offset int, limit int) ([]domain.Article, error) {
+	return a.repo.List(ctx, uid, offset, limit)
 }

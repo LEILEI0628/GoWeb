@@ -2,10 +2,14 @@ package repository
 
 import (
 	"context"
+	loggerx "github.com/LEILEI0628/GinPro/middleware/logger"
 	"github.com/LEILEI0628/GoWeb/internal/domain"
+	"github.com/LEILEI0628/GoWeb/internal/repository"
 	"github.com/LEILEI0628/GoWeb/internal/repository/dao/article"
 	"github.com/LEILEI0628/GoWeb/internal/repository/dao/po"
+	"github.com/ecodeclub/ekit/slice"
 	"gorm.io/gorm"
+	"time"
 )
 
 type ArticleRepository interface {
@@ -15,12 +19,15 @@ type ArticleRepository interface {
 	// Sync 存储并同步数据
 	Sync(ctx context.Context, art domain.Article) (int64, error)
 	SyncStatus(ctx context.Context, id int64, author int64, status domain.ArticleStatus) error
+	List(ctx context.Context, uid int64, offset int, limit int) ([]domain.Article, error)
+	GetByID(ctx context.Context, id int64) (domain.Article, error)
+	GetPublishedById(ctx context.Context, id int64) (domain.Article, error)
 	//FindById(ctx context.Context, id int64) domain.Article
-
 }
 
 type CachedArticleRepository struct {
-	dao dao.ArticleDAO
+	dao      dao.ArticleDAO
+	userRepo repository.UserRepository
 
 	// v1 操作两个 DAO
 	readerDAO dao.ReaderDAO
@@ -31,6 +38,7 @@ type CachedArticleRepository struct {
 	// 那么就只能利用 db 开始事务之后，创建基于事务的 DAO
 	// 或者，直接去掉 DAO 这一层，在 repository 的实现中，直接操作 db
 	db *gorm.DB
+	l  loggerx.Logger
 }
 
 func NewArticleRepository(dao dao.ArticleDAO) ArticleRepository {
@@ -133,6 +141,51 @@ func (c *CachedArticleRepository) Update(ctx context.Context, article domain.Art
 	})
 }
 
+func (repo *CachedArticleRepository) GetPublishedById(
+	ctx context.Context, id int64) (domain.Article, error) {
+	// 读取线上库数据，如果你的 Content 被你放过去了 OSS 上，你就要让前端去读 Content 字段
+	art, err := repo.dao.GetPubById(ctx, id)
+	if err != nil {
+		return domain.Article{}, err
+	}
+	// 你在这边要组装 user 了，适合单体应用
+	usr, err := repo.userRepo.FindById(ctx, art.AuthorId)
+	res := domain.Article{
+		Id:      art.Id,
+		Title:   art.Title,
+		Status:  domain.ArticleStatus(art.Status),
+		Content: art.Content,
+		Author: domain.Author{
+			Id:   usr.Id,
+			Name: usr.NickName,
+		},
+		CreateTime: time.UnixMilli(art.CreateTime),
+		UpdateTime: time.UnixMilli(art.UpdateTime),
+	}
+	return res, nil
+}
+
+func (c *CachedArticleRepository) GetByID(ctx context.Context, id int64) (domain.Article, error) {
+	data, err := c.dao.GetById(ctx, id)
+	if err != nil {
+		return domain.Article{}, err
+	}
+	return c.toDomain(data), nil
+}
+
+func (c *CachedArticleRepository) List(ctx context.Context, uid int64, offset int, limit int) ([]domain.Article, error) {
+	// TODO 集成缓存方案
+	// 你只缓存这一页
+	res, err := c.dao.GetByAuthor(ctx, uid, offset, limit)
+	if err != nil {
+		return nil, err
+	}
+	data := slice.Map[po.Article, domain.Article](res, func(idx int, src po.Article) domain.Article {
+		return c.toDomain(src)
+	})
+	// TODO 回写缓存
+	return data, nil
+}
 func (c *CachedArticleRepository) toEntity(art domain.Article) po.Article {
 	return po.Article{
 		Id:       art.Id,
@@ -140,5 +193,19 @@ func (c *CachedArticleRepository) toEntity(art domain.Article) po.Article {
 		Content:  art.Content,
 		AuthorId: art.Author.Id,
 		Status:   uint8(art.Status),
+	}
+}
+
+func (repo *CachedArticleRepository) toDomain(art po.Article) domain.Article {
+	return domain.Article{
+		Id:      art.Id,
+		Title:   art.Title,
+		Status:  domain.ArticleStatus(art.Status),
+		Content: art.Content,
+		Author: domain.Author{
+			Id: art.AuthorId,
+		},
+		CreateTime: time.UnixMilli(art.CreateTime),
+		UpdateTime: time.UnixMilli(art.UpdateTime),
 	}
 }
