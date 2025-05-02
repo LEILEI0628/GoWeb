@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"github.com/LEILEI0628/GoWeb/internal/domain"
-	"github.com/LEILEI0628/GoWeb/internal/repository"
+	"github.com/LEILEI0628/GoWeb/internal/repository/article"
 )
 
 type ArticleServiceInterface interface {
@@ -11,10 +11,10 @@ type ArticleServiceInterface interface {
 	Publish(ctx context.Context, art domain.Article) (int64, error)
 }
 type ArticleService struct {
-	repo repository.ArticleRepository
+	repo article.ArticleRepository
 }
 
-func NewArticleService(repo repository.ArticleRepository) ArticleServiceInterface {
+func NewArticleService(repo article.ArticleRepository) ArticleServiceInterface {
 	return &ArticleService{repo: repo}
 }
 

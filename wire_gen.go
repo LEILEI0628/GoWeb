@@ -8,8 +8,10 @@ package main
 
 import (
 	"github.com/LEILEI0628/GoWeb/internal/repository"
+	article2 "github.com/LEILEI0628/GoWeb/internal/repository/article"
 	"github.com/LEILEI0628/GoWeb/internal/repository/cache"
 	"github.com/LEILEI0628/GoWeb/internal/repository/dao"
+	"github.com/LEILEI0628/GoWeb/internal/repository/dao/article"
 	"github.com/LEILEI0628/GoWeb/internal/service"
 	"github.com/LEILEI0628/GoWeb/internal/web"
 	"github.com/LEILEI0628/GoWeb/internal/web/handler"
@@ -36,8 +38,8 @@ func InitWebServer() *gin.Engine {
 	userServiceInterface := ioc.InitUserService(userRepository)
 	userHandler := handler.NewUserHandler(userServiceInterface)
 	userRouters := router.NewUserRouters(userHandler)
-	articleDAO := dao.NewArticleDAO(db)
-	articleRepository := repository.NewArticleRepository(articleDAO)
+	articleDAO := article.NewArticleDAO(db)
+	articleRepository := article2.NewArticleRepository(articleDAO)
 	articleServiceInterface := service.NewArticleService(articleRepository)
 	articleHandler := handler.NewArticleHandler(articleServiceInterface, logger)
 	articleRouters := router.NewArticleRouters(articleHandler)

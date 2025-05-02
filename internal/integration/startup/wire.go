@@ -5,6 +5,7 @@ package startup
 import (
 	jwtx "github.com/LEILEI0628/GinPro/middleware/jwt"
 	"github.com/LEILEI0628/GoWeb/internal/repository"
+	"github.com/LEILEI0628/GoWeb/internal/repository/article"
 	"github.com/LEILEI0628/GoWeb/internal/repository/cache"
 	"github.com/LEILEI0628/GoWeb/internal/repository/dao"
 	"github.com/LEILEI0628/GoWeb/internal/service"
@@ -26,7 +27,7 @@ func InitWebServer() *gin.Engine {
 		userSvcProvider,
 		//articlSvcProvider,
 		dao.NewGORMArticleDAO,
-		repository.NewArticleRepository,
+		article.NewArticleRepository,
 		// service 部分
 		service.NewArticleService,
 		// handler 部分
@@ -49,7 +50,7 @@ func InitArticleHandler() *web.ArticleHandler {
 		dao.NewGORMArticleDAO,
 		service.NewArticleService,
 		web.NewArticleHandler,
-		repository.NewArticleRepository,
+		article.NewArticleRepository,
 	)
 	return &web.ArticleHandler{}
 }

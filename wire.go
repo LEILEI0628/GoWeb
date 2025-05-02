@@ -4,8 +4,10 @@ package main
 
 import (
 	"github.com/LEILEI0628/GoWeb/internal/repository"
+	article2 "github.com/LEILEI0628/GoWeb/internal/repository/article"
 	"github.com/LEILEI0628/GoWeb/internal/repository/cache"
 	"github.com/LEILEI0628/GoWeb/internal/repository/dao"
+	"github.com/LEILEI0628/GoWeb/internal/repository/dao/article"
 	"github.com/LEILEI0628/GoWeb/internal/service"
 	"github.com/LEILEI0628/GoWeb/internal/web"
 	"github.com/LEILEI0628/GoWeb/internal/web/handler"
@@ -22,12 +24,12 @@ func InitWebServer() *gin.Engine {
 
 		// 初始化DAO
 		dao.NewUserDAO,
-		dao.NewArticleDAO,
+		article.NewArticleDAO,
 		// 初始化Cache
 		cache.NewUserCache,
 		// 初始化Repository
 		repository.NewUserRepository,
-		repository.NewArticleRepository,
+		article2.NewArticleRepository,
 		// 初始化Service
 		ioc.InitUserService,
 		service.NewArticleService,

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	jwtx "github.com/LEILEI0628/GinPro/middleware/jwt"
 	"github.com/LEILEI0628/GoWeb/internal/integration/startup"
-	"github.com/LEILEI0628/GoWeb/internal/repository"
-	"github.com/LEILEI0628/GoWeb/internal/repository/dao"
+	article2 "github.com/LEILEI0628/GoWeb/internal/repository/article"
+	"github.com/LEILEI0628/GoWeb/internal/repository/dao/article"
 	"github.com/LEILEI0628/GoWeb/internal/repository/dao/po"
 	"github.com/LEILEI0628/GoWeb/internal/service"
 	"github.com/LEILEI0628/GoWeb/internal/web/handler"
@@ -38,8 +38,8 @@ func (s *ArticleTestSuite) SetupSuite() {
 			UID: 123,
 		})
 	})
-	artDao := dao.NewArticleDAO(s.db)
-	repo := repository.NewArticleRepository(artDao)
+	artDao := article.NewArticleDAO(s.db)
+	repo := article2.NewArticleRepository(artDao)
 	svc := service.NewArticleService(repo)
 	articleHandler := handler.NewArticleHandler(svc, startup.InitLog())
 	router.NewArticleRouters(articleHandler).RegisterRouters(s.server)
