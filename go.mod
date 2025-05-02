@@ -3,8 +3,10 @@ module github.com/LEILEI0628/GoWeb
 go 1.24
 
 require (
-	github.com/LEILEI0628/GinPro v0.7.0
+	github.com/LEILEI0628/GinPro v0.7.1
+	github.com/aws/aws-sdk-go v1.55.7
 	github.com/dlclark/regexp2 v1.11.5
+	github.com/ecodeclub/ekit v0.0.9
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/gin-contrib/cors v1.7.4
 	github.com/gin-contrib/sessions v1.0.2
@@ -73,6 +75,7 @@ require (
 	github.com/hashicorp/serf v0.10.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.17.7 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.10 // indirect
@@ -112,7 +115,7 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/arch v0.15.0 // indirect
-	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63 // indirect
+	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
 	golang.org/x/net v0.37.0 // indirect
 	golang.org/x/oauth2 v0.25.0 // indirect
 	golang.org/x/sync v0.12.0 // indirect

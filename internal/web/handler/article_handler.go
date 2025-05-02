@@ -55,7 +55,7 @@ func (h *ArticleHandler) Publish(ctx *gin.Context) {
 	c := ctx.MustGet("claims")
 	claims, ok := c.(*jwtx.UserClaims)
 	if !ok {
-		// 你可以考虑监控住这里
+		// 可以考虑监控住这里
 		//ctx.AbortWithStatus(http.StatusUnauthorized)
 		ctx.JSON(http.StatusOK, ginx.Result{
 			Code: 5,
