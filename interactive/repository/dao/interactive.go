@@ -16,12 +16,48 @@ type InteractiveDAO interface {
 	GetLikeInfo(ctx context.Context, biz string, bizId, uid int64) (po.UserLikeBiz, error)
 	DeleteLikeInfo(ctx context.Context, biz string, bizId, uid int64) error
 	Get(ctx context.Context, biz string, bizId int64) (po.Interactive, error)
+	BatchIncrReadCnt(ctx context.Context, bizs []string, ids []int64) error
 	InsertCollectionBiz(ctx context.Context, cb po.UserCollectionBiz) error
 	GetCollectionInfo(ctx context.Context, biz string, bizId, uid int64) (po.UserCollectionBiz, error)
+	GetByIds(ctx context.Context, biz string, ids []int64) ([]po.Interactive, error)
 }
 
 type GORMInteractiveDAO struct {
 	db *gorm.DB
+}
+
+func (dao *GORMInteractiveDAO) GetByIds(ctx context.Context, biz string, ids []int64) ([]po.Interactive, error) {
+	var res []po.Interactive
+	err := dao.db.WithContext(ctx).Where("biz = ? AND id IN ?", biz, ids).Find(&res).Error
+	return res, err
+}
+func (dao *GORMInteractiveDAO) BatchIncrReadCnt(ctx context.Context, bizs []string, ids []int64) error {
+	return dao.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// 让调用者保证两者是相等的
+		for i := 0; i < len(bizs); i++ {
+			err := dao.incrReadCnt(tx, bizs[i], ids[i])
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
+func (dao *GORMInteractiveDAO) incrReadCnt(tx *gorm.DB, biz string, bizId int64) error {
+	now := time.Now().UnixMilli()
+	return tx.Clauses(clause.OnConflict{
+		DoUpdates: clause.Assignments(map[string]any{
+			"read_cnt":    gorm.Expr("`read_cnt`+1"),
+			"update_time": now,
+		}),
+	}).Create(&po.Interactive{
+		ReadCnt:    1,
+		CreateTime: now,
+		UpdateTime: now,
+		Biz:        biz,
+		BizId:      bizId,
+	}).Error
 }
 
 func (dao *GORMInteractiveDAO) GetLikeInfo(ctx context.Context, biz string, bizId, uid int64) (po.UserLikeBiz, error) {

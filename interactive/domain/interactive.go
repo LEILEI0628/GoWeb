@@ -1,7 +1,5 @@
 package domain
 
-import domain2 "github.com/LEILEI0628/GoWeb/internal/domain"
-
 // Interactive 总体交互计数
 type Interactive struct {
 	//Biz   string
@@ -24,7 +22,7 @@ type Self struct {
 type Collection struct {
 	Name  string
 	Uid   int64
-	Items []domain2.Resource
+	Items []Resource
 }
 
 // max(发送者总速率/单一分区写入速率, 发送者总速率/单一消费者速率) + buffer

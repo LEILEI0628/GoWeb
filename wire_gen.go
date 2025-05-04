@@ -8,6 +8,7 @@ package main
 
 import (
 	repository3 "github.com/LEILEI0628/GoWeb/interactive/repository"
+	cache2 "github.com/LEILEI0628/GoWeb/interactive/repository/cache"
 	dao3 "github.com/LEILEI0628/GoWeb/interactive/repository/dao"
 	service2 "github.com/LEILEI0628/GoWeb/interactive/service"
 	"github.com/LEILEI0628/GoWeb/internal/repository"
@@ -46,7 +47,7 @@ func InitWebServer() *gin.Engine {
 	articleRepository := repository2.NewArticleRepository(articleDAO)
 	articleServiceInterface := service.NewArticleService(articleRepository)
 	interactiveDAO := dao3.NewGORMInteractiveDAO(db)
-	interactiveCache := cache.NewRedisInteractiveCache(cmdable)
+	interactiveCache := cache2.NewRedisInteractiveCache(cmdable)
 	interactiveRepositoryInterface := repository3.NewCachedInteractiveRepository(interactiveDAO, interactiveCache, logger)
 	interactiveServiceInterface := service2.NewInteractiveService(interactiveRepositoryInterface, logger)
 	articleHandler := handler.NewArticleHandler(articleServiceInterface, interactiveServiceInterface, logger)
@@ -58,4 +59,4 @@ func InitWebServer() *gin.Engine {
 
 // wire.go:
 
-var interactiveSvcProvider = wire.NewSet(service2.NewInteractiveService, repository3.NewCachedInteractiveRepository, dao3.NewGORMInteractiveDAO, cache.NewRedisInteractiveCache)
+var interactiveSvcProvider = wire.NewSet(service2.NewInteractiveService, repository3.NewCachedInteractiveRepository, dao3.NewGORMInteractiveDAO, cache2.NewRedisInteractiveCache)

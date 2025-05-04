@@ -4,9 +4,10 @@ import (
 	"context"
 	loggerx "github.com/LEILEI0628/GinPro/middleware/logger"
 	"github.com/LEILEI0628/GoWeb/interactive/domain"
-	dao2 "github.com/LEILEI0628/GoWeb/interactive/repository/dao"
+	"github.com/LEILEI0628/GoWeb/interactive/repository/cache"
+	"github.com/LEILEI0628/GoWeb/interactive/repository/dao"
 	"github.com/LEILEI0628/GoWeb/interactive/repository/dao/po"
-	"github.com/LEILEI0628/GoWeb/internal/repository/cache"
+	"github.com/ecodeclub/ekit/slice"
 )
 
 //go:generate mockgen -source=./interactive.go -package=repomocks -destination=mocks/interactive.mock.go InteractiveRepository
@@ -15,19 +16,22 @@ type InteractiveRepositoryInterface interface {
 		biz string, bizId int64) error
 	IncrLike(ctx context.Context, biz string, bizId, uid int64) error
 	DecrLike(ctx context.Context, biz string, bizId, uid int64) error
+	// BatchIncrReadCnt 这里调用者要保证 bizs 和 bizIds 长度一样
+	BatchIncrReadCnt(ctx context.Context, bizs []string, bizIds []int64) error
 	AddCollectionItem(ctx context.Context, biz string, bizId, cid int64, uid int64) error
 	Get(ctx context.Context, biz string, bizId int64) (domain.Interactive, error)
 	Liked(ctx context.Context, biz string, id int64, uid int64) (bool, error)
 	Collected(ctx context.Context, biz string, id int64, uid int64) (bool, error)
+	GetByIds(ctx context.Context, biz string, ids []int64) ([]domain.Interactive, error)
 }
 
 type CachedReadCntRepository struct {
 	cache cache.InteractiveCache
-	dao   dao2.InteractiveDAO
+	dao   dao.InteractiveDAO
 	l     loggerx.Logger
 }
 
-func NewCachedInteractiveRepository(dao dao2.InteractiveDAO,
+func NewCachedInteractiveRepository(dao dao.InteractiveDAO,
 	cache cache.InteractiveCache, l loggerx.Logger) InteractiveRepositoryInterface {
 	return &CachedReadCntRepository{
 		dao:   dao,
@@ -35,13 +39,16 @@ func NewCachedInteractiveRepository(dao dao2.InteractiveDAO,
 		l:     l,
 	}
 }
-
+func (c *CachedReadCntRepository) BatchIncrReadCnt(ctx context.Context,
+	bizs []string, bizIds []int64) error {
+	return c.dao.BatchIncrReadCnt(ctx, bizs, bizIds)
+}
 func (c *CachedReadCntRepository) Liked(ctx context.Context, biz string, id int64, uid int64) (bool, error) {
 	_, err := c.dao.GetLikeInfo(ctx, biz, id, uid)
 	switch err {
 	case nil:
 		return true, nil
-	case dao2.ErrRecordNotFound:
+	case dao.ErrRecordNotFound:
 		// 你要吞掉
 		return false, nil
 	default:
@@ -49,12 +56,23 @@ func (c *CachedReadCntRepository) Liked(ctx context.Context, biz string, id int6
 	}
 }
 
+func (c *CachedReadCntRepository) GetByIds(ctx context.Context, biz string, ids []int64) ([]domain.Interactive, error) {
+	vals, err := c.dao.GetByIds(ctx, biz, ids)
+	if err != nil {
+		return nil, err
+	}
+	return slice.Map[po.Interactive, domain.Interactive](vals,
+		func(idx int, src po.Interactive) domain.Interactive {
+			return c.toDomain(src)
+		}), nil
+}
+
 func (c *CachedReadCntRepository) Collected(ctx context.Context, biz string, id int64, uid int64) (bool, error) {
 	_, err := c.dao.GetCollectionInfo(ctx, biz, id, uid)
 	switch err {
 	case nil:
 		return true, nil
-	case dao2.ErrRecordNotFound:
+	case dao.ErrRecordNotFound:
 		// 你要吞掉
 		return false, nil
 	default:
@@ -177,7 +195,7 @@ func (c *CachedReadCntRepository) toDomain(itr po.Interactive) domain.Interactiv
 }
 
 func (c *CachedReadCntRepository) GetCollection() (domain.Collection, error) {
-	items, err := c.dao.(*dao2.GORMInteractiveDAO).GetItems()
+	items, err := c.dao.(*dao.GORMInteractiveDAO).GetItems()
 	if err != nil {
 		return domain.Collection{}, err
 	}

@@ -4,6 +4,7 @@ package main
 
 import (
 	repository2 "github.com/LEILEI0628/GoWeb/interactive/repository"
+	cache2 "github.com/LEILEI0628/GoWeb/interactive/repository/cache"
 	dao2 "github.com/LEILEI0628/GoWeb/interactive/repository/dao"
 	service2 "github.com/LEILEI0628/GoWeb/interactive/service"
 	"github.com/LEILEI0628/GoWeb/internal/repository"
@@ -24,7 +25,7 @@ var interactiveSvcProvider = wire.NewSet(
 	service2.NewInteractiveService,
 	repository2.NewCachedInteractiveRepository,
 	dao2.NewGORMInteractiveDAO,
-	cache.NewRedisInteractiveCache,
+	cache2.NewRedisInteractiveCache,
 )
 
 func InitWebServer() *gin.Engine {

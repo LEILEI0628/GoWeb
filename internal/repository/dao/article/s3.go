@@ -3,9 +3,9 @@ package dao
 import (
 	"bytes"
 	"context"
+	"github.com/LEILEI0628/GoKit/tools"
 	"github.com/LEILEI0628/GoWeb/internal/domain"
 	"github.com/LEILEI0628/GoWeb/internal/repository/dao/po"
-	"github.com/LEILEI0628/goKit/tools"
 	_ "github.com/aws/aws-sdk-go"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"gorm.io/gorm"
