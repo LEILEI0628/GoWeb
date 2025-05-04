@@ -6,5 +6,5 @@ import (
 )
 
 func InitTable(db *gorm.DB) error {
-	return db.AutoMigrate(&po.User{}, &po.Article{})
+	return db.AutoMigrate(&po.User{}, &po.Article{}, &po.PublishedArticle{}, &po.PublishedArticleV1{})
 }

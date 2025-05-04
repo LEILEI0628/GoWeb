@@ -11,12 +11,13 @@ import (
 )
 
 type ArticleHandler struct {
-	svc service.ArticleServiceInterface
-	l   loggerx.Logger
+	svc    service.ArticleServiceInterface
+	l      loggerx.Logger
+	itrSvc service.InteractiveServiceInterface
 }
 
-func NewArticleHandler(svc service.ArticleServiceInterface, logger loggerx.Logger) *ArticleHandler {
-	return &ArticleHandler{svc: svc, l: logger}
+func NewArticleHandler(svc service.ArticleServiceInterface, itrSvc service.InteractiveServiceInterface, logger loggerx.Logger) *ArticleHandler {
+	return &ArticleHandler{svc: svc, itrSvc: itrSvc, l: logger}
 }
 
 func (h *ArticleHandler) Edit(ctx *gin.Context) {

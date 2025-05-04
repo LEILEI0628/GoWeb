@@ -5,9 +5,9 @@ import (
 	"context"
 	"github.com/LEILEI0628/GoWeb/internal/domain"
 	"github.com/LEILEI0628/GoWeb/internal/repository/dao/po"
+	"github.com/LEILEI0628/goKit/tools"
 	_ "github.com/aws/aws-sdk-go"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/ecodeclub/ekit"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"strconv"
@@ -33,7 +33,7 @@ func NewOssDAO(oss *s3.S3, db *gorm.DB) ArticleDAO {
 		oss: oss,
 		// 你也可以考虑利用依赖注入来传入。
 		// 但是事实上这个很少变，所以你可以延迟到必要的时候再注入
-		bucket: ekit.ToPtr[string]("webook-1314583317"),
+		bucket: tools.ToPtr[string]("webook-1314583317"),
 		GORMArticleDAO: GORMArticleDAO{
 			db: db,
 		},
@@ -91,9 +91,9 @@ func (o *S3DAO) Sync(ctx context.Context, art po.Article) (int64, error) {
 	// 你要有监控，你要有重试，你要有补偿机制
 	_, err = o.oss.PutObjectWithContext(ctx, &s3.PutObjectInput{
 		Bucket:      o.bucket,
-		Key:         ekit.ToPtr[string](strconv.FormatInt(art.Id, 10)),
+		Key:         tools.ToPtr[string](strconv.FormatInt(art.Id, 10)),
 		Body:        bytes.NewReader([]byte(art.Content)),
-		ContentType: ekit.ToPtr[string]("text/plain;charset=utf-8"),
+		ContentType: tools.ToPtr[string]("text/plain;charset=utf-8"),
 	})
 	return id, err
 }

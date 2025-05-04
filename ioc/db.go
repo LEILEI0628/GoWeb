@@ -2,6 +2,7 @@ package ioc
 
 import (
 	"github.com/LEILEI0628/GinPro/middleware/logger"
+	"github.com/LEILEI0628/GoWeb/internal/repository/dao"
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -43,10 +44,10 @@ func InitDB(logger loggerx.Logger) *gorm.DB {
 	}
 
 	// 建表：
-	//err = dao.InitUserTable(db)
-	//if err != nil {
-	//	panic(err)
-	//}
+	err = dao.InitTable(db)
+	if err != nil {
+		panic(err)
+	}
 
 	return db
 }

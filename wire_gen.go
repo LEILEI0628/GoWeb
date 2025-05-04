@@ -8,16 +8,17 @@ package main
 
 import (
 	"github.com/LEILEI0628/GoWeb/internal/repository"
-	article2 "github.com/LEILEI0628/GoWeb/internal/repository/article"
+	repository2 "github.com/LEILEI0628/GoWeb/internal/repository/article"
 	"github.com/LEILEI0628/GoWeb/internal/repository/cache"
 	"github.com/LEILEI0628/GoWeb/internal/repository/dao"
-	"github.com/LEILEI0628/GoWeb/internal/repository/dao/article"
+	dao2 "github.com/LEILEI0628/GoWeb/internal/repository/dao/article"
 	"github.com/LEILEI0628/GoWeb/internal/service"
 	"github.com/LEILEI0628/GoWeb/internal/web"
 	"github.com/LEILEI0628/GoWeb/internal/web/handler"
 	"github.com/LEILEI0628/GoWeb/internal/web/router"
 	"github.com/LEILEI0628/GoWeb/ioc"
 	"github.com/gin-gonic/gin"
+	"github.com/google/wire"
 )
 
 import (
@@ -38,12 +39,20 @@ func InitWebServer() *gin.Engine {
 	userServiceInterface := ioc.InitUserService(userRepository)
 	userHandler := handler.NewUserHandler(userServiceInterface)
 	userRouters := router.NewUserRouters(userHandler)
-	articleDAO := article.NewArticleDAO(db)
-	articleRepository := article2.NewArticleRepository(articleDAO)
+	articleDAO := dao2.NewGORMArticleDAO(db)
+	articleRepository := repository2.NewArticleRepository(articleDAO)
 	articleServiceInterface := service.NewArticleService(articleRepository)
-	articleHandler := handler.NewArticleHandler(articleServiceInterface, logger)
+	interactiveDAO := dao.NewGORMInteractiveDAO(db)
+	interactiveCache := cache.NewRedisInteractiveCache(cmdable)
+	interactiveRepositoryInterface := repository.NewCachedInteractiveRepository(interactiveDAO, interactiveCache, logger)
+	interactiveServiceInterface := service.NewInteractiveService(interactiveRepositoryInterface, logger)
+	articleHandler := handler.NewArticleHandler(articleServiceInterface, interactiveServiceInterface, logger)
 	articleRouters := router.NewArticleRouters(articleHandler)
 	registerRouters := web.NewRegisterRouters(userRouters, articleRouters)
 	engine := ioc.InitGin(v, registerRouters)
 	return engine
 }
+
+// wire.go:
+
+var interactiveSvcProvider = wire.NewSet(service.NewInteractiveService, repository.NewCachedInteractiveRepository, dao.NewGORMInteractiveDAO, cache.NewRedisInteractiveCache)

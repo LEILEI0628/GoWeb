@@ -1,9 +1,12 @@
 module github.com/LEILEI0628/GoWeb
 
-go 1.24
+go 1.24.0
+
+toolchain go1.24.1
 
 require (
 	github.com/LEILEI0628/GinPro v0.7.1
+	github.com/LEILEI0628/goKit v0.0.0-20250504033051-9df88d7e8b62
 	github.com/aws/aws-sdk-go v1.55.7
 	github.com/dlclark/regexp2 v1.11.5
 	github.com/ecodeclub/ekit v0.0.9
@@ -24,7 +27,9 @@ require (
 	golang.org/x/crypto v0.36.0
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gorm v1.25.12
+	golang.org/x/sync v0.12.0
 )
+
 
 require (
 	cloud.google.com/go v0.116.0 // indirect
@@ -118,7 +123,6 @@ require (
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
 	golang.org/x/net v0.37.0 // indirect
 	golang.org/x/oauth2 v0.25.0 // indirect
-	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/time v0.8.0 // indirect
