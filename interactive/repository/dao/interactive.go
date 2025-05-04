@@ -2,7 +2,7 @@ package dao
 
 import (
 	"context"
-	"github.com/LEILEI0628/GoWeb/internal/repository/dao/po"
+	"github.com/LEILEI0628/GoWeb/interactive/repository/dao/po"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"time"
@@ -43,7 +43,7 @@ func (dao *GORMInteractiveDAO) GetCollectionInfo(ctx context.Context, biz string
 // 适当的重复（复制-粘贴）要比强行抽象要更加好一点
 // func (dao *GORMInteractiveDAO) common(ctx context.Context,
 //
-//		biz any, column string, intr Interactive) error {
+//		biz any, column string, itr Interactive) error {
 //		now := time.Now().UnixMilli()
 //		return dao.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 //			err := dao.db.WithContext(ctx).Create(&biz).Error
@@ -55,7 +55,7 @@ func (dao *GORMInteractiveDAO) GetCollectionInfo(ctx context.Context, biz string
 //					column:  gorm.Expr(fmt.Sprintf("`%s`+1", column)),
 //					"update_time": now,
 //				}),
-//			}).Create(&intr).Error
+//			}).Create(&itr).Error
 //		})
 //	}
 //func (dao *GORMInteractiveDAO) InsertCollectionBizV1(ctx context.Context,
@@ -178,16 +178,16 @@ func NewGORMInteractiveDAO(db *gorm.DB) InteractiveDAO {
 func (dao *GORMInteractiveDAO) IncrReadCnt(ctx context.Context,
 	biz string, bizId int64) error {
 	// DAO 要怎么实现？表结构该怎么设计？
-	//var intr Interactive
+	//var itr Interactive
 	//err := dao.db.
 	//	Where("biz_id =? AND biz = ?", bizId, biz).
-	//	First(&intr).Error
+	//	First(&itr).Error
 	// 两个 goroutine 过来，你查询到 read_cnt 都是 10
 	//if err != nil {
 	//	return err
 	//}
 	// 都变成了 11
-	//cnt := intr.ReadCnt + 1
+	//cnt := itr.ReadCnt + 1
 	//// 最终变成 11
 	//dao.db.Where("biz_id =? AND biz = ?", bizId, biz).Updates(map[string]any{
 	//	"read_cnt": cnt,

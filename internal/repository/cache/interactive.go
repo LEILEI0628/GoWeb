@@ -4,7 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
-	"github.com/LEILEI0628/GoWeb/internal/domain"
+	"github.com/LEILEI0628/GoWeb/interactive/domain"
 	"github.com/redis/go-redis/v9"
 	"strconv"
 	"time"
@@ -35,7 +35,7 @@ type InteractiveCache interface {
 	// Get 查询缓存中数据
 	// 事实上，这里 liked 和 collected 是不需要缓存的
 	Get(ctx context.Context, biz string, bizId int64) (domain.Interactive, error)
-	Set(ctx context.Context, biz string, bizId int64, intr domain.Interactive) error
+	Set(ctx context.Context, biz string, bizId int64, itr domain.Interactive) error
 }
 
 // 方案1
@@ -134,12 +134,12 @@ func (r *RedisInteractiveCache) Get(ctx context.Context,
 	}, err
 }
 
-func (r *RedisInteractiveCache) Set(ctx context.Context, biz string, bizId int64, intr domain.Interactive) error {
+func (r *RedisInteractiveCache) Set(ctx context.Context, biz string, bizId int64, itr domain.Interactive) error {
 	key := r.key(biz, bizId)
 	err := r.client.HMSet(ctx, key,
-		fieldLikeCnt, intr.LikeCnt,
-		fieldCollectCnt, intr.CollectCnt,
-		fieldReadCnt, intr.ReadCnt).Err()
+		fieldLikeCnt, itr.LikeCnt,
+		fieldCollectCnt, itr.CollectCnt,
+		fieldReadCnt, itr.ReadCnt).Err()
 	if err != nil {
 		return err
 	}

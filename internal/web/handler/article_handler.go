@@ -4,6 +4,7 @@ import (
 	ginx "github.com/LEILEI0628/GinPro/GinX"
 	jwtx "github.com/LEILEI0628/GinPro/middleware/jwt"
 	loggerx "github.com/LEILEI0628/GinPro/middleware/logger"
+	service2 "github.com/LEILEI0628/GoWeb/interactive/service"
 	"github.com/LEILEI0628/GoWeb/internal/domain"
 	"github.com/LEILEI0628/GoWeb/internal/service"
 	"github.com/gin-gonic/gin"
@@ -13,10 +14,10 @@ import (
 type ArticleHandler struct {
 	svc    service.ArticleServiceInterface
 	l      loggerx.Logger
-	itrSvc service.InteractiveServiceInterface
+	itrSvc service2.InteractiveServiceInterface
 }
 
-func NewArticleHandler(svc service.ArticleServiceInterface, itrSvc service.InteractiveServiceInterface, logger loggerx.Logger) *ArticleHandler {
+func NewArticleHandler(svc service.ArticleServiceInterface, itrSvc service2.InteractiveServiceInterface, logger loggerx.Logger) *ArticleHandler {
 	return &ArticleHandler{svc: svc, itrSvc: itrSvc, l: logger}
 }
 

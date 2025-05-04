@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 	loggerx "github.com/LEILEI0628/GinPro/middleware/logger"
-	"github.com/LEILEI0628/GoWeb/internal/domain"
-	"github.com/LEILEI0628/GoWeb/internal/repository"
+	"github.com/LEILEI0628/GoWeb/interactive/domain"
+	"github.com/LEILEI0628/GoWeb/interactive/repository"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -42,13 +42,13 @@ func (svc *InteractiveService) Get(ctx context.Context,
 	// 按照 repository 的语义(完成 domain.Interactive 的完整构造)，你这里拿到的就应该是包含全部字段的
 	var (
 		eg        errgroup.Group
-		intr      domain.Interactive
+		itr       domain.Interactive
 		liked     bool
 		collected bool
 	)
 	eg.Go(func() error {
 		var err error
-		intr, err = svc.repo.Get(ctx, biz, bizId)
+		itr, err = svc.repo.Get(ctx, biz, bizId)
 		return err
 	})
 	eg.Go(func() error {
@@ -65,9 +65,9 @@ func (svc *InteractiveService) Get(ctx context.Context,
 	if err != nil {
 		return domain.Interactive{}, err
 	}
-	intr.Liked = liked
-	intr.Collected = collected
-	return intr, err
+	itr.Liked = liked
+	itr.Collected = collected
+	return itr, err
 }
 
 func (svc *InteractiveService) Like(ctx context.Context, biz string, bizId int64, uid int64) error {

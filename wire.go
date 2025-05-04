@@ -3,6 +3,9 @@
 package main
 
 import (
+	repository2 "github.com/LEILEI0628/GoWeb/interactive/repository"
+	dao2 "github.com/LEILEI0628/GoWeb/interactive/repository/dao"
+	service2 "github.com/LEILEI0628/GoWeb/interactive/service"
 	"github.com/LEILEI0628/GoWeb/internal/repository"
 	articleRepo "github.com/LEILEI0628/GoWeb/internal/repository/article"
 	"github.com/LEILEI0628/GoWeb/internal/repository/cache"
@@ -18,9 +21,9 @@ import (
 )
 
 var interactiveSvcProvider = wire.NewSet(
-	service.NewInteractiveService,
-	repository.NewCachedInteractiveRepository,
-	dao.NewGORMInteractiveDAO,
+	service2.NewInteractiveService,
+	repository2.NewCachedInteractiveRepository,
+	dao2.NewGORMInteractiveDAO,
 	cache.NewRedisInteractiveCache,
 )
 

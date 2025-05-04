@@ -3,9 +3,10 @@ package repository
 import (
 	"context"
 	loggerx "github.com/LEILEI0628/GinPro/middleware/logger"
-	"github.com/LEILEI0628/GoWeb/internal/domain"
+	"github.com/LEILEI0628/GoWeb/interactive/domain"
+	dao2 "github.com/LEILEI0628/GoWeb/interactive/repository/dao"
+	"github.com/LEILEI0628/GoWeb/interactive/repository/dao/po"
 	"github.com/LEILEI0628/GoWeb/internal/repository/cache"
-	"github.com/LEILEI0628/GoWeb/internal/repository/dao"
 )
 
 //go:generate mockgen -source=./interactive.go -package=repomocks -destination=mocks/interactive.mock.go InteractiveRepository
@@ -22,11 +23,11 @@ type InteractiveRepositoryInterface interface {
 
 type CachedReadCntRepository struct {
 	cache cache.InteractiveCache
-	dao   dao.InteractiveDAO
+	dao   dao2.InteractiveDAO
 	l     loggerx.Logger
 }
 
-func NewCachedInteractiveRepository(dao dao.InteractiveDAO,
+func NewCachedInteractiveRepository(dao dao2.InteractiveDAO,
 	cache cache.InteractiveCache, l loggerx.Logger) InteractiveRepositoryInterface {
 	return &CachedReadCntRepository{
 		dao:   dao,
@@ -40,7 +41,7 @@ func (c *CachedReadCntRepository) Liked(ctx context.Context, biz string, id int6
 	switch err {
 	case nil:
 		return true, nil
-	case dao.ErrRecordNotFound:
+	case dao2.ErrRecordNotFound:
 		// 你要吞掉
 		return false, nil
 	default:
@@ -53,7 +54,7 @@ func (c *CachedReadCntRepository) Collected(ctx context.Context, biz string, id 
 	switch err {
 	case nil:
 		return true, nil
-	case dao.ErrRecordNotFound:
+	case dao2.ErrRecordNotFound:
 		// 你要吞掉
 		return false, nil
 	default:
@@ -104,7 +105,7 @@ func (c *CachedReadCntRepository) AddCollectionItem(ctx context.Context,
 	// 以及收藏夹里面的内容
 	// 用户会频繁访问他的收藏夹，那么你就应该缓存，不然你就不需要
 	// 一个东西要不要缓存，你就看用户会不会频繁访问（反复访问）
-	err := c.dao.InsertCollectionBiz(ctx, dao.UserCollectionBiz{
+	err := c.dao.InsertCollectionBiz(ctx, po.UserCollectionBiz{
 		Cid:   cid,
 		Biz:   biz,
 		BizId: bizId,
@@ -120,23 +121,23 @@ func (c *CachedReadCntRepository) AddCollectionItem(ctx context.Context,
 func (c *CachedReadCntRepository) Get(ctx context.Context,
 	biz string, bizId int64) (domain.Interactive, error) {
 	// 要从缓存拿出来阅读数，点赞数和收藏数
-	intr, err := c.cache.Get(ctx, biz, bizId)
+	itr, err := c.cache.Get(ctx, biz, bizId)
 	if err == nil {
-		return intr, nil
+		return itr, nil
 	}
 
 	// 但不是所有的结构体都是可比较的
-	//if intr == (domain.Interactive{}) {
+	//if itr == (domain.Interactive{}) {
 	//
 	//}
 	// 在这里查询数据库
-	daoIntr, err := c.dao.Get(ctx, biz, bizId)
+	daoItr, err := c.dao.Get(ctx, biz, bizId)
 	if err != nil {
 		return domain.Interactive{}, err
 	}
-	intr = c.toDomain(daoIntr)
+	itr = c.toDomain(daoItr)
 	go func() {
-		er := c.cache.Set(ctx, biz, bizId, intr)
+		er := c.cache.Set(ctx, biz, bizId, itr)
 		// 记录日志
 		if er != nil {
 			c.l.Error("回写缓存失败",
@@ -145,18 +146,18 @@ func (c *CachedReadCntRepository) Get(ctx context.Context,
 			)
 		}
 	}()
-	return intr, nil
+	return itr, nil
 }
 
 // UpdateCnt 这不是好的实践
-func (c *CachedReadCntRepository) UpdateCnt(intr *dao.Interactive) {
-	intr.LikeCnt = 30
+func (c *CachedReadCntRepository) UpdateCnt(itr *po.Interactive) {
+	itr.LikeCnt = 30
 }
 
 // UpdateCntV1 凑合的实践
-func (c *CachedReadCntRepository) UpdateCntV1(intr dao.Interactive) dao.Interactive {
-	intr.LikeCnt = 30
-	return intr
+func (c *CachedReadCntRepository) UpdateCntV1(itr po.Interactive) po.Interactive {
+	itr.LikeCnt = 30
+	return itr
 }
 
 // 正常来说，参数必然不用指针：方法不要修改参数，通过返回值来修改参数
@@ -167,16 +168,16 @@ func (c *CachedReadCntRepository) UpdateCntV1(intr dao.Interactive) dao.Interact
 // 最简原则：
 // 1. 接收器永远用指针
 // 2. 输入输出都用结构体
-func (c *CachedReadCntRepository) toDomain(intr dao.Interactive) domain.Interactive {
+func (c *CachedReadCntRepository) toDomain(itr po.Interactive) domain.Interactive {
 	return domain.Interactive{
-		LikeCnt:    intr.LikeCnt,
-		CollectCnt: intr.CollectCnt,
-		ReadCnt:    intr.ReadCnt,
+		LikeCnt:    itr.LikeCnt,
+		CollectCnt: itr.CollectCnt,
+		ReadCnt:    itr.ReadCnt,
 	}
 }
 
 func (c *CachedReadCntRepository) GetCollection() (domain.Collection, error) {
-	items, err := c.dao.(*dao.GORMInteractiveDAO).GetItems()
+	items, err := c.dao.(*dao2.GORMInteractiveDAO).GetItems()
 	if err != nil {
 		return domain.Collection{}, err
 	}
