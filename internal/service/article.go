@@ -93,11 +93,10 @@ func (svc *ArticleService) GetPublishedById(ctx context.Context, id, uid int64) 
 	art, err := svc.repo.GetPublishedById(ctx, id)
 	if err == nil {
 		go func() {
-			er := svc.producer.ProduceReadEvent(
+			er := svc.producer.ProduceReadEvent( // 在此处发送读者阅读事件
 				ctx,
 				events.ReadEvent{
-					// 即便你的消费者要用 art 的里面的数据，
-					// 让它去查询，你不要在 event 里面带
+					// 即使需要article中的数据也不要在这里传，因为在消费的时候可能已经被修改了
 					Uid: uid,
 					Aid: id,
 				})

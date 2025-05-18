@@ -28,10 +28,22 @@ var interactiveSvcProvider = wire.NewSet(
 	cache2.NewRedisInteractiveCache,
 )
 
+var databaseSelect = wire.NewSet(ioc.InitDB)
+
+type DatabaseType string
+
+var MySQL DatabaseType = "mysql"
+
 func InitWebServer() *gin.Engine {
+	//database := MySQL
+	//if database == MySQL {
+	//
+	//}
 	wire.Build(
 		// 初始化最基础的第三方依赖
-		ioc.InitDB, ioc.InitRedis,
+		//ioc.InitDB,
+		databaseSelect,
+		ioc.InitRedis,
 
 		// 初始化DAO
 		dao.NewUserDAO,
@@ -59,5 +71,6 @@ func InitWebServer() *gin.Engine {
 		ioc.InitMiddleware,
 		ioc.InitGin,
 	)
+
 	return new(gin.Engine)
 }

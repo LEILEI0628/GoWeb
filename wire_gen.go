@@ -60,3 +60,9 @@ func InitWebServer() *gin.Engine {
 // wire.go:
 
 var interactiveSvcProvider = wire.NewSet(service2.NewInteractiveService, repository3.NewCachedInteractiveRepository, dao3.NewGORMInteractiveDAO, cache2.NewRedisInteractiveCache)
+
+var databaseSelect = wire.NewSet(ioc.InitDB)
+
+type DatabaseType string
+
+var MySQL DatabaseType = "mysql"
