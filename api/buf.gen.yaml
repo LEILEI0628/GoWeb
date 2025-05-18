@@ -1,15 +1,18 @@
-version: v1
+# buf.gen.yaml 仅用于管理代码生成插件和参数
+version: v2
 managed:
   enabled: true
-  go_package_prefix:
-    default: github.com/LEILEI0628/GoWeb/api/proto/gen
+  override:
+    - file_option: go_package
+      value: github.com/LEILEI0628/GoWeb/api/proto/gen
 plugins:
-  - plugin: buf.build/protocolbuffers/go
-    out: api/proto/gen
-    opt: paths=source_relative
-
-  - plugin: buf.build/grpc/go
-    out: api/proto/gen
-    opt: paths=source_relative
+  - remote: buf.build/protocolbuffers/go:v1.32.0  # 指定插件版本
+    out: proto/gen
+    opt:
+      - paths=source_relative
+  - remote: buf.build/grpc/go:v1.3.0  # 使用官方推荐的 gRPC 插件
+    out: proto/gen
+    opt:
+      - paths=source_relative
 
 #buf generate GoWeb/api/proto

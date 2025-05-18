@@ -1,0 +1,4 @@
+# buf.yaml 声明模块名称、依赖项、代码规范检查规则等
+version: v2
+deps:
+  - buf.build/googleapis/googleapis  # 依赖项在此声明
